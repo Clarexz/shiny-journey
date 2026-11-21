@@ -53,3 +53,17 @@ npm run check-rls   # falla si alguna tabla de public no tiene RLS
   `alter table ... enable row level security;` y ninguna política (ver plan, 11.1).
 - Usuarios semilla (solo local): `owner@example.com` (tenant_owner de `dr-demo`) y
   `admin@example.com` (ravyn_admin), ambos con la contraseña `ravyn-dev-123`.
+
+## Panel web (`apps/web`)
+
+Next.js 16 (App Router), Tailwind 4 y shadcn/ui. Ver la decisión D-12 del plan sobre la versión.
+
+```bash
+cp apps/web/.env.example apps/web/.env.local   # completar con `npx supabase status`
+npm run dev -w apps/web                        # http://localhost:3000
+npm run build -w apps/web                      # build standalone (Docker)
+```
+
+- `proxy.ts` refresca la sesión en cada petición y manda a `/login` las páginas sin sesión.
+  Las rutas `/api/*` no redirigen: responden 401.
+- El login es una Server Action; el navegador no necesita claves de Supabase.

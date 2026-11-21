@@ -19,7 +19,7 @@ Convenciones de este documento:
 | 3 | Calendario | Sin Google Calendar: disponibilidad administrada desde el panel | Se elimina la integración con Google en la fase 1. Tabla propia de disponibilidad. Menos latencia y menos dependencias |
 | 4 | Después del DM | Solo decir que está interesado; el doctor sigue a mano | El agente envía un único mensaje. No se procesan respuestas privadas (además, por privacidad, no podríamos) |
 | 5 | Avisos | PWA con notificaciones push desde el inicio | Web Push con VAPID, service worker, instalación en pantalla de inicio. Correo como respaldo |
-| 6 | Convenciones | Repo `ravyn-crm` | Se replican: Next.js 14.2, `@supabase/ssr`, cliente admin con service role, contexto de tenant con filtro explícito, Tailwind + shadcn/ui (Radix), Zod 4, react-hook-form, npm, documentos en español |
+| 6 | Convenciones | Repo `ravyn-crm` | Se replican: Next.js (16.4 en lugar de 14.2, ver D-12), `@supabase/ssr`, cliente admin con service role, contexto de tenant con filtro explícito, Tailwind + shadcn/ui (Radix), Zod 4, react-hook-form, npm, documentos en español |
 | 7 | VPS | Capacidad holgada (40+ contenedores, 5+ instancias de Supabase, menos del 50 % de uso) | Supabase **self-hosted** dedicado, Redis y Evolution en el mismo VPS |
 | 8 | Dominio | `ravyn-crm.cloud` (la raíz hoy apunta a otro repo) | Panel en el subdominio `app.ravyn-crm.cloud` durante la fase 1 (ver D-08) |
 | 9 | Aviso de privacidad | Incluirlo | Sección 11.5 con contenido mínimo y cláusulas de contrato |
@@ -98,7 +98,7 @@ flowchart LR
       EVODB[(Postgres de Evolution<br/>solo sesiones)]
       WK[worker<br/>Fastify + BullMQ<br/>adaptadores, motor, módulos]
       RD[(Redis<br/>colas, dedupe, rate limit, caché)]
-      WEB[web<br/>Next.js 14 panel PWA]
+      WEB[web<br/>Next.js 16 panel PWA]
       SB[(Supabase self-hosted<br/>Postgres + Auth + Kong)]
     end
   end
@@ -202,7 +202,7 @@ Monorepo con **npm workspaces**, igual que el gestor de `ravyn-crm`.
 ```
 shiny-journey/
   apps/
-    web/                    Next.js 14 (App Router): panel del cliente, panel interno, PWA
+    web/                    Next.js 16 (App Router): panel del cliente, panel interno, PWA
     worker/                 Fastify (webhooks, API interna) + BullMQ (colas) + schedulers
   packages/
     core/                   tipos de dominio, TenantContext, registro de módulos, motor de agentes
@@ -1395,9 +1395,8 @@ Supabase Studio no se expone, o va con la misma protección que Evolution. La AP
 
 `infra/env/web.env.example`
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://app.ravyn-crm.cloud      # vía proxy /auth/v1
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_INTERNAL_URL=http://supabase-kong:8000
+SUPABASE_ANON_KEY=                                        # solo servidor (login por Server Action)
 SUPABASE_SERVICE_ROLE_KEY=
 REDIS_URL=redis://redis:6379/0
 WORKER_INTERNAL_URL=http://worker:3001
@@ -1636,7 +1635,7 @@ Formato de cada tarea: **ID. Título**; qué produce; criterio de aceptación ve
 - Depende de: nada.
 
 **T0.2. Esqueleto de `apps/web` con las convenciones de `ravyn-crm`**
-- Produce: Next.js 14.2 con App Router, Tailwind y shadcn/ui (copiando los `components/ui` que se usen), `lib/supabase/{server,client,admin}.ts`, `middleware.ts` (refresco de sesión y redirección a `/login`) y la página `/login`.
+- Produce: Next.js 16.4 con App Router (D-12), Tailwind y shadcn/ui (copiando los `components/ui` que se usen), `lib/supabase/{server,client,admin}.ts`, `proxy.ts` (equivalente a `middleware.ts` en Next 16; refresco de sesión y redirección a `/login`) y la página `/login`.
 - Acepta: `npm run build -w apps/web` funciona; el login con un usuario de Supabase local redirige a `/`.
 - Depende de: T0.1, T0.3.
 
@@ -1913,6 +1912,7 @@ flowchart LR
 | A-04 | Hora límite para turnos del mismo día | No se incluye en la fase 1: los mensajes mencionan turno, no hora |
 | A-05 | Coberturas de "ambos turnos" | Se descartan: solo le interesa el matutino (trabaja por las tardes) |
 | (nuevo) | Quién configura | El doctor administra desde su panel las sucursales, los turnos y la disponibilidad |
+| D-12 | Versión de Next.js | **16.4** en lugar de 14.2: la rama 14 ya no recibe parches y 14.2.35 tiene avisos críticos abiertos (RCE en Image Optimization, SSRF y DoS en Server Actions y RSC). Diferencias con `ravyn-crm`: `cookies()` es asíncrono, `middleware.ts` se llama `proxy.ts`, React 19 y Tailwind 4. Además, el web no usa variables `NEXT_PUBLIC_*` de Supabase (se incrustan en el build y las imágenes se construyen una sola vez en CI): el login es una Server Action y el navegador no habla con Supabase en la fase 0 |
 
 ### 16.2 Decisiones asumidas
 
