@@ -1,0 +1,38 @@
+# Desarrollo local: Redis y el worker en Docker, contra el Supabase local de `npm run db:start`.
+#
+#   export SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY="\(.*\)"$/\1/p')
+#   docker compose -f infra/docker-compose.dev.yml up --build
+#   curl localhost:3001/health
+name: ravyn-agents-dev
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: [redis_dev_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build:
+      context: ..
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      PORT: "3001"
+      SUPABASE_INTERNAL_URL: ${SUPABASE_INTERNAL_URL:-http://host.docker.internal:54321}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?exporta SUPABASE_SERVICE_ROLE_KEY (ver cabecera)}
+      REDIS_URL: redis://redis:6379/0
+      CHANNEL_DRY_RUN: "true"
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    ports: ["127.0.0.1:3001:3001"]
+    depends_on:
+      redis: { condition: service_healthy }
+
+volumes:
+  redis_dev_data: {}

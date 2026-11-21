@@ -3,7 +3,7 @@
   "private": true,
   "description": "Plataforma multi-tenant de agentes de WhatsApp (Ravyn Studio)",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22.11"
   },
   "workspaces": [
     "packages/*",

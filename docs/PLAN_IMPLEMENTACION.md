@@ -1630,7 +1630,7 @@ Formato de cada tarea: **ID. Título**; qué produce; criterio de aceptación ve
 ### Fase 0. Fundaciones
 
 **T0.1. Monorepo y herramientas base**
-- Produce: `package.json` con workspaces, `packages/config` (tsconfig base estricto, eslint, vitest), `.gitignore`, `.nvmrc` (Node 20 LTS), los scripts `lint`, `typecheck` y `test` en la raíz, y `README.md` con los comandos.
+- Produce: `package.json` con workspaces, `packages/config` (tsconfig base estricto, eslint, vitest), `.gitignore`, `.nvmrc` (Node 22 LTS; Node 20 llegó a fin de vida en abril de 2026), los scripts `lint`, `typecheck` y `test` en la raíz, y `README.md` con los comandos.
 - Acepta: `npm ci && npm run lint && npm run typecheck && npm test` pasan con un paquete de ejemplo vacío.
 - Depende de: nada.
 

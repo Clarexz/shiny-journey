@@ -7,7 +7,7 @@ El plan completo está en [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACI
 
 ## Requisitos
 
-- Node 20 LTS o superior (`.nvmrc`) y npm 10.
+- Node 22 LTS (`.nvmrc`; Node 20 ya no tiene soporte) y npm 10 o superior.
 - Docker (para Supabase local, Redis y el worker en desarrollo).
 - Supabase CLI (`npx supabase ...`, no hace falta instalarlo globalmente).
 
@@ -76,3 +76,25 @@ Las pruebas contra Supabase local se saltan si no hay credenciales. Para correrl
 set -a && . apps/web/.env.local && set +a
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm test
 ```
+
+## Worker (`apps/worker`)
+
+Fastify (`/health`) y BullMQ con las colas `inbound`, `outbound`, `side-effects`, `notify` y
+`maintenance` (sin procesadores en la fase 0). Logs JSON con pino, que redacta el contenido de
+los mensajes (`text`, `message`, `body`, `pushName`, `participant`) y el token del webhook.
+
+```bash
+cp apps/worker/.env.example apps/worker/.env.local   # completar SUPABASE_SERVICE_ROLE_KEY
+npm run dev -w apps/worker                           # requiere Redis en 127.0.0.1:6379
+```
+
+Con Docker (Redis y worker; Supabase sigue siendo el de `npm run db:start`):
+
+```bash
+export SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY="\(.*\)"$/\1/p')
+docker compose -f infra/docker-compose.dev.yml up --build
+curl localhost:3001/health   # {"ok":true,"redis":true,"db":true}
+```
+
+El build (`npm run build -w apps/worker`) genera un solo archivo `dist/main.mjs` con todas las
+dependencias; la imagen final no lleva `node_modules`.
