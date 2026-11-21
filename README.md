@@ -67,3 +67,12 @@ npm run build -w apps/web                      # build standalone (Docker)
 - `proxy.ts` refresca la sesión en cada petición y manda a `/login` las páginas sin sesión.
   Las rutas `/api/*` no redirigen: responden 401.
 - El login es una Server Action; el navegador no necesita claves de Supabase.
+
+### Pruebas de integración
+
+Las pruebas contra Supabase local se saltan si no hay credenciales. Para correrlas:
+
+```bash
+set -a && . apps/web/.env.local && set +a
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm test
+```
