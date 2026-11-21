@@ -39,3 +39,17 @@ docs/         plan, anexos y runbooks
 
 Los comandos de cada fase (Supabase, web, worker, despliegue) se documentan en su sección más abajo
 a medida que se agregan.
+
+## Base de datos (Supabase local)
+
+```bash
+npm run db:start    # levanta Supabase local en Docker (API 54321, Postgres 54322)
+npm run db:reset    # aplica supabase/migrations y supabase/seed/*.sql desde cero
+npm run db:types    # regenera packages/db/src/types.gen.ts
+npm run check-rls   # falla si alguna tabla de public no tiene RLS
+```
+
+- Migraciones en `supabase/migrations/YYYYMMDDHHMM_nombre.sql`. Cada tabla nueva lleva
+  `alter table ... enable row level security;` y ninguna política (ver plan, 11.1).
+- Usuarios semilla (solo local): `owner@example.com` (tenant_owner de `dr-demo`) y
+  `admin@example.com` (ravyn_admin), ambos con la contraseña `ravyn-dev-123`.

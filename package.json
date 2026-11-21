@@ -16,12 +16,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --local --schema public > packages/db/src/types.gen.ts",
+    "check-rls": "npm run check-rls -w @ravyn/db"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
     "eslint": "^10.15.0",
     "prettier": "^3.10.1",
+    "supabase": "^3.2.0",
     "typescript": "^6.0.3",
     "vitest": "^5.1.1"
   }
