@@ -5,4 +5,3 @@ coverage
 docs
 supabase/.temp
 package-lock.json
-packages/db/src/types.gen.ts

@@ -6,7 +6,8 @@
   "exports": {
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./eslint": "./eslint.config.mjs",
-    "./vitest": "./vitest.base.mjs"
+    "./vitest": "./vitest.base.mjs",
+    "./tenant-tables.json": "./tenant-tables.json"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

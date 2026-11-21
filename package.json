@@ -20,7 +20,7 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local --schema public > packages/db/src/types.gen.ts",
+    "db:types": "supabase gen types typescript --schema public > packages/db/src/types.gen.ts && prettier --write packages/db/src/types.gen.ts",
     "check-rls": "npm run check-rls -w @ravyn/db"
   },
   "devDependencies": {

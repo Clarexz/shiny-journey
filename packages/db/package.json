@@ -1,0 +1,22 @@
+{
+  "name": "@ravyn/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "check-rls": "tsx scripts/check-rls.ts"
+  },
+  "devDependencies": {
+    "@ravyn/config": "^0.0.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.2",
+    "pg": "^8.23.1"
+  }
+}
