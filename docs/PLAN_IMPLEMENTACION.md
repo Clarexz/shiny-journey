@@ -923,19 +923,25 @@ export const ApartadorConfigSchema = z.object({
   city: z.literal("reynosa"),
 
   branches: z.object({
-    accepted: z.array(z.string()).min(1),            // códigos de catálogo: ["S-0202", ...]
-    aliases: z.record(z.string(), z.array(z.string())).default({}), // {"S-1005": ["olmo"]}
+    // Cada entrada es una sucursal que le interesa al doctor. "code" es la clave del
+    // catálogo cuando se sabe cuál es; null cuando solo se conoce el número y la
+    // referencia que usa el doctor (por ejemplo, Reynosa 11 "Olmo").
+    accepted: z.array(z.object({
+      number: z.number().int().positive(),
+      code: z.string().nullable(),
+      label: z.string().min(1),                       // "Cumbres", "Olmo"
+      aliases: z.array(z.string()).default([]),       // palabras extra que la identifican
+    })).min(1),
   }),
   ambiguityPolicy: z.enum(["ask_in_dm", "notify", "claim"]).default("ask_in_dm"),
 
   shifts: z.object({
     allowed: z.array(z.enum(["matutino", "vespertino"])).default(["matutino"]),
-    bothShiftsRequest: z.enum(["notify", "discard"]).default("notify"),
+    bothShiftsRequest: z.enum(["notify", "discard"]).default("discard"),
   }),
 
   availability: z.object({
     weekdays: z.array(z.number().int().min(0).max(6)).default([0, 1, 2, 3, 4, 5, 6]),
-    sameDayCutoff: z.string().regex(/^\d{2}:\d{2}$/).nullable().default("10:00"),
     maxDaysAhead: z.number().int().min(0).max(60).default(21),
     oneShiftPerDay: z.literal(true).default(true),
   }),
@@ -1013,8 +1019,9 @@ Entrada: número `n` y texto normalizado. Candidatos: `branches where city = 're
 
 Evaluación contra `accepted`:
 - `resuelta`: aceptada o no aceptada.
+- **Entrada aceptada sin código** (`code = null`, solo número y referencia, como Reynosa 11 "Olmo"): si el texto contiene su `label` o alguno de sus `aliases`, cuenta como resuelta y aceptada. Si no, el número se trata siempre como **ambiguo mixto**, aunque el catálogo tenga uno o dos candidatos, y se aplica `ambiguityPolicy`, preguntando por su `label` ("¿es la de Olmo?").
 - `ambigua`: si todos los candidatos son aceptados, se acepta (caso de Reynosa 30). Si ninguno lo es, se rechaza. Si es **mixta**, se aplica `ambiguityPolicy`:
-  - `ask_in_dm` [DECISIÓN ASUMIDA, por defecto]: se aparta con la plantilla `interestAmbiguous`, que muestra interés y pregunta la colonia de la sucursal aceptada ("Hola, buen día. Me interesa la cobertura, ¿es la de Cumbres?"). Así se conserva la ventaja de velocidad sin comprometerse con una sucursal no deseada. El doctor recibe el aviso "Apartado con confirmación pendiente". Es compatible con "solo decir que está interesado", porque el mensaje sí lo dice.
+  - `ask_in_dm` (por defecto, confirmado por el cliente): se aparta con la plantilla `interestAmbiguous`, que muestra interés y pregunta por la `label` de la sucursal aceptada ("Hola, buen día. Me interesa la cobertura, ¿es la de Cumbres?"). Así se conserva la ventaja de velocidad sin comprometerse con una sucursal no deseada. El doctor recibe el aviso "Apartado con confirmación pendiente". Es compatible con "solo decir que está interesado", porque el mensaje sí lo dice.
   - `notify`: solo avisa.
   - `claim`: aparta como si fuera aceptada.
 
@@ -1027,11 +1034,11 @@ Palabras clave iniciales (T1.9 las carga en `keywords` a partir de la colonia de
 | Reynosa 3 Cumbres | S-0404 | FC-1228 (Benito Juárez) | cumbres, mil cumbres |
 | Reynosa 4 blv Hidalgo | S-0414 | FC-1229 (Villa Florida) | hidalgo, del valle |
 | Reynosa 10 Centro | S-0805 | F-1167 (Santa Cecilia) | centro, colon |
-| Reynosa 11 Olmo | **[CONFIRMAR CON CLIENTE]** S-1005 (Moderno, Carretera Monterrey) o F-1267 (Bugambilias) | la otra | olmo |
+| Reynosa 11 Olmo | sin código (`code = null`): no se sabe si es S-1005 (Moderno) o F-1267 (Bugambilias) | las dos | olmo; si el mensaje no dice "olmo", es ambigua y el DM pregunta "¿es la de Olmo?" |
 | Reynosa 15 Vista Hermosa | S-1430 | F-1694 (Solidaridad) | vista hermosa, vistahermosa |
 | Reynosa 17 Puerta del Sol | S-1607 | F-2049 (La Cañada) | puerta del sol, puerto madero |
 | Reynosa 21 Aquiles | S-1858 | F-0607 (Villa Diamante) | aquiles, aquiles serdan |
-| Reynosa 22 Jarachina Sur | F-0651 [DECISIÓN ASUMIDA: la colonia es Lomas del Real de Jarachinas] | S-2012 (La Cañada) | jarachina, jarachinas, las lomas |
+| Reynosa 22 Jarachina Sur | F-0651 (supuesto aceptado por el cliente: Lomas del Real de Jarachinas) | S-2012 (La Cañada) | jarachina, jarachinas, las lomas; sin palabra clave, es ambigua |
 | Reynosa 30 Caracoles | F-4224 | S-2266 (también aceptada) | caracoles |
 | Reynosa 30 Hacienda del Sol | S-2266 | F-4224 (también aceptada) | hacienda del sol |
 | Reynosa 31 Petrolera | F-4706 | S-2331 (Los Almendros) | petrolera, escandon |
@@ -1149,19 +1156,20 @@ Las reglas se evalúan en orden; la primera que decide, gana. Cada regla devuelv
 | 5 | Varias sucursales mencionadas | NOTIFICAR | `varias_sucursales` | alta |
 | 6 | Alguna fecha en el pasado (antes de hoy) | DESCARTAR | `fecha_pasada` | no |
 | 7 | Más de una fecha | NOTIFICAR | `varios_dias` | alta |
-| 8 | `turno = ambos` | según `bothShiftsRequest` | `ambos_turnos` | normal |
+| 8 | `turno = ambos` | DESCARTAR (por defecto; `bothShiftsRequest = notify` lo cambia a NOTIFICAR) | `ambos_turnos` | silencio |
 | 9 | `turno = null` | NOTIFICAR | `turno_desconocido` | alta |
 | 10 | Sucursal `desconocida` | NOTIFICAR | `sucursal_desconocida` | normal |
 | 11 | Fecha más allá de `maxDaysAhead` | NOTIFICAR | `fecha_lejana` | normal |
 | 12 | Día no disponible (regla semanal o excepción) | DESCARTAR | `dia_no_disponible` | silencio |
 | 13 | Ya tiene un turno apartado ese día | DESCARTAR | `ya_tiene_turno` | silencio |
-| 14 | Es hoy y la hora local pasa de `sameDayCutoff` | NOTIFICAR | `mismo_dia_tarde` | alta |
-| 15 | Ya se le escribió a ese publicador por ese turno | DESCARTAR | `duplicado` | no |
-| 16 | Remitente sin número y el envío a `@lid` no está soportado | NOTIFICAR | `remitente_sin_numero` | alta |
-| 17 | Límite de envíos excedido | NOTIFICAR | `limite_envios` | alta |
-| 18 | Agente en modo `observe` | OBSERVAR | `modo_observacion` | normal |
-| 19 | Sucursal ambigua mixta | según `ambiguityPolicy` | `sucursal_ambigua` | alta |
-| 20 | (todo cumple) | APARTAR | `cumple` | alta |
+| 14 | Ya se le escribió a ese publicador por ese turno | DESCARTAR | `duplicado` | no |
+| 15 | Remitente sin número y el envío a `@lid` no está soportado | NOTIFICAR | `remitente_sin_numero` | alta |
+| 16 | Límite de envíos excedido | NOTIFICAR | `limite_envios` | alta |
+| 17 | Agente en modo `observe` | OBSERVAR | `modo_observacion` | normal |
+| 18 | Sucursal ambigua mixta | según `ambiguityPolicy` | `sucursal_ambigua` | alta |
+| 19 | (todo cumple) | APARTAR | `cumple` | alta |
+
+No hay regla de hora límite para turnos del mismo día: los mensajes reales mencionan el turno pero no la hora, así que en la fase 1 un turno matutino de hoy se aparta igual que cualquier otro. Si la operación real muestra que hace falta, se agrega como regla configurable en la fase 2.
 
 Las reglas 2 y 3 van primero a propósito: los descartes duros se deciden con lo que dio el regex y evitan tanto la llamada al LLM como avisos que serían ruido.
 
@@ -1175,7 +1183,7 @@ Las reglas 2 y 3 van primero a propósito: los descartes duros se deciden con lo
 | "...busco cobertura domingo 15 noviembre, Reynosa 52 pirámides ambos turnos" | suc 52 (F-8013, no aceptada), 2026-11-15, ambos | DESCARTAR `sucursal_no_aceptada` (sin LLM) |
 | "Busco cobertura para este jueves y viernes turno matutino reynosa 53 por motivos de salud" | suc 53 desconocida, 2 fechas, matutino | NOTIFICAR `varios_dias` |
 | "Busco cobertura para hoy turno matutino en Reynosa 51" | suc 51 (F-7544, no aceptada), hoy, matutino | DESCARTAR `sucursal_no_aceptada` |
-| "Buenos días busco cobertura para hoy 9 noviembre matutino en cumbres Reynosa 3" | S-0404 resuelta por "cumbres", 2026-11-09, matutino | **APARTAR** (si son menos de las 10:00) |
+| "Buenos días busco cobertura para hoy 9 noviembre matutino en cumbres Reynosa 3" | S-0404 resuelta por "cumbres", 2026-11-09, matutino | **APARTAR** |
 
 ### 7.8 Plantillas de mensaje
 
@@ -1237,8 +1245,9 @@ Aplicación: `apps/web`, grupo de rutas `app/(panel)`, dominio `app.ravyn-crm.cl
    - Regla semanal: qué días de la semana suele estar disponible.
    - Lista de próximos turnos apartados, con estados: mensaje enviado, confirmado, perdido o cancelado.
 4. **Configuración del agente** (`/m/apartador-turnos/configuracion`)
-   - Sucursales: lista agrupada por número. Cuando un número tiene gemela, se muestran las dos con su colonia, por ejemplo "Reynosa 3 · Las Cumbres (S)" y "Reynosa 3 · Benito Juárez (TMS)".
-   - Turnos permitidos; qué hacer con "ambos turnos"; hora límite para turnos del mismo día; días máximos hacia adelante.
+   - **El propio doctor administra todo lo de esta pantalla y la de Disponibilidad**, sin pedírselo a Ravyn: sucursales, turnos, disponibilidad, políticas y plantillas. Ravyn solo interviene en lo que está en el panel interno (alta, canal y estado del agente).
+   - Sucursales: el doctor agrega y quita las que le interesan. Puede elegirlas del catálogo (lista agrupada por número; cuando un número tiene gemela se muestran las dos con su colonia, por ejemplo "Reynosa 3 · Las Cumbres (S)" y "Reynosa 3 · Benito Juárez (TMS)") o agregar una "por número" con su propia referencia, cuando no sabe cuál del catálogo es o no aparece (por ejemplo "Reynosa 11 · Olmo"). Las agregadas por número se tratan como ambiguas salvo que el mensaje mencione su referencia (7.5). Cada sucursal admite palabras clave extra.
+   - Turnos que le interesan (en su caso, solo matutino); qué hacer con "ambos turnos" (por defecto, descartar); días máximos hacia adelante.
    - Política cuando no se sabe cuál sucursal es (con un texto que explica cada opción).
    - Límites de envío (con un aviso de riesgo si se suben).
    - Plantillas: editar el pool, con vista previa de 3 variantes generadas.
@@ -1692,7 +1701,7 @@ Formato de cada tarea: **ID. Título**; qué produce; criterio de aceptación ve
 
 **T1.6. Captura de payloads reales y validación de `@lid`**
 - Produce: fixtures reales anonimizados en `modules/apartador-turnos/fixtures/evolution/`; lista definitiva de campos alternos para LID; prueba manual documentada de envío a un JID `@lid`; ajuste de `resolveSender` y del envío con o sin el `1`.
-- Acepta: `docs/notas/evolution-payloads.md` con los hallazgos; las pruebas de T1.3 corren también sobre los fixtures reales; queda documentado si `sendText` a `@lid` funciona (sí o no, y la decisión resultante en la regla 16).
+- Acepta: `docs/notas/evolution-payloads.md` con los hallazgos; las pruebas de T1.3 corren también sobre los fixtures reales; queda documentado si `sendText` a `@lid` funciona (sí o no, y la decisión resultante en la regla 15).
 - Depende de: T1.3, T1.4, T1.5.
 
 **Bloque B: motor**
@@ -1888,16 +1897,22 @@ flowchart LR
 
 | ID | Pregunta | Por defecto | Quién |
 |---|---|---|---|
-| A-01 | **Política para sucursales ambiguas** (números con gemela): ¿preguntar la colonia en el DM, solo avisar o apartar de todos modos? | `ask_in_dm` | Doctor |
-| A-02 | "Reynosa 11 Olmo": ¿es `S-1005` (Moderno, Carretera Monterrey) o `F-1267` (Bugambilias)? | Ninguna aceptada hasta confirmar (se avisa como desconocida) | Doctor |
-| A-03 | "Reynosa 22 Jarachina Sur": ¿es `F-0651` (Lomas del Real de Jarachinas) y no `S-2012` (La Cañada)? | `F-0651` | Doctor |
-| A-04 | Hora límite para aceptar automáticamente un turno matutino del mismo día | 10:00 | Doctor |
-| A-05 | ¿Las coberturas de "ambos turnos" le interesan (avisar) o se descartan? | Avisar | Doctor |
 | A-06 | Días de la semana que normalmente puede cubrir y cuántos días hacia adelante | Todos; 21 días | Doctor |
 | A-07 | ¿Acepta un número dedicado en lugar del personal (11.2)? | Número personal, con contrato | Doctor y Ravyn |
 | A-08 | Etiqueta exacta de Evolution y comportamiento de `@lid` | Se fija en T1.5 y T1.6 | Ravyn (técnico) |
 | A-09 | Redacción final del aviso de privacidad y los contratos | Borradores de T1.29 | Abogado |
 | A-10 | Cuándo se cambia la raíz `ravyn-crm.cloud` a esta plataforma | Fase 1 en `app.`; la raíz después | Ravyn |
+
+### 16.1.1 Decisiones resueltas por el cliente (2026-11-21)
+
+| ID | Pregunta | Resolución |
+|---|---|---|
+| A-01 | Política para sucursales ambiguas | `ask_in_dm`: el DM dice que le interesa y pregunta la referencia de su sucursal |
+| A-02 | "Reynosa 11 Olmo": ¿S-1005 o F-1267? | Se registra sin código (solo número y referencia "Olmo"). Si el mensaje no la menciona, es ambigua y se pregunta en el DM |
+| A-03 | "Reynosa 22 Jarachina Sur": ¿F-0651? | Se asume F-0651. Si el mensaje no lo deja claro, entra como ambigua (ya ocurre por tener gemela) |
+| A-04 | Hora límite para turnos del mismo día | No se incluye en la fase 1: los mensajes mencionan turno, no hora |
+| A-05 | Coberturas de "ambos turnos" | Se descartan: solo le interesa el matutino (trabaja por las tardes) |
+| (nuevo) | Quién configura | El doctor administra desde su panel las sucursales, los turnos y la disponibilidad |
 
 ### 16.2 Decisiones asumidas
 
