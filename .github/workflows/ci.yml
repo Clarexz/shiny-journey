@@ -115,8 +115,8 @@ jobs:
           file: apps/${{ matrix.app }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/shiny-journey-${{ matrix.app }}:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/shiny-journey-${{ matrix.app }}:main
+            ghcr.io/clarexz/shiny-journey-${{ matrix.app }}:${{ github.sha }}
+            ghcr.io/clarexz/shiny-journey-${{ matrix.app }}:main
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
