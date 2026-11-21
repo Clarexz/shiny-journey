@@ -1,17 +1,23 @@
 # Runbook: primer despliegue y despliegues de rutina
 
 Cubre T0.8 (primer despliegue en el VPS) y los despliegues posteriores. Lo ejecuta una persona
-de Ravyn con acceso SSH al VPS.
+de Ravyn con acceso SSH al VPS, o una sesión de Claude Code en el VPS con su supervisión.
+
+Convención del VPS de Ravyn: los stacks viven en `/docker/<proyecto>` (Supabase) y
+`/opt/<proyecto>` (apps); cada stack tiene su propio nombre de proyecto de compose y prefijo
+de contenedores. Hay un único Traefik compartido (stack `/docker/n8n`): no se modifica.
 
 ## 1. Requisitos
 
-- VPS con Docker y Docker Compose v2.20 o superior, y Traefik ya operando con el entrypoint
-  `websecure`, el certresolver `le` y la red externa `traefik_public`.
-- DNS: registro A de `app.ravyn-crm.cloud` (y `evo.ravyn-crm.cloud`) al VPS.
-- Acceso de lectura a GHCR: un token de GitHub con `read:packages` (las imágenes de un repo
-  privado son privadas).
-- Checkout del repo en el VPS (por ejemplo `/opt/ravyn-agents`), solo para `infra/` y
-  `supabase/migrations`.
+- Docker y Docker Compose v2.20 o superior.
+- Traefik operando con un entrypoint HTTPS `websecure`. Anotar el nombre de su **red externa**
+  y de su **certresolver**: van en `infra/.env` como `TRAEFIK_NETWORK` y
+  `TRAEFIK_CERTRESOLVER` (en el VPS de Ravyn: `n8n_default` y `mytlschallenge`).
+- DNS: registro A de `app.ravyn-crm.cloud` a la IP del VPS. Sin esto, Let's Encrypt no emite
+  el certificado. `evo.ravyn-crm.cloud` solo hace falta en la fase 1.
+- Acceso de lectura a GHCR: un token de GitHub con `read:packages`.
+- Node 22 para los comandos `npx`. Si el host no lo tiene, usar un contenedor:
+  `docker run --rm -it --network host -v "$PWD:/w" -w /w node:22-alpine <comando>`.
 
 ## 2. Red y Supabase dedicado (una sola vez)
 
@@ -19,32 +25,50 @@ de Ravyn con acceso SSH al VPS.
 docker network create agents_net
 ```
 
-1. Levantar una instancia **dedicada** de Supabase self-hosted (`supabase-agentes`) con el
-   compose oficial de Supabase, en su propio directorio y con secretos nuevos (JWT secret,
-   anon key, service role key, contraseña de Postgres). No compartirla con `ravyn-crm`.
-2. Conectar Kong a `agents_net` con el alias `supabase-kong` (override del compose oficial):
+1. Instancia **dedicada** de Supabase self-hosted en `/docker/supabase-agentes`, con nombre
+   de proyecto `supabase-agentes`, el compose oficial y secretos nuevos (JWT secret, anon key,
+   service role key, contraseña de Postgres). No se comparte con `ravyn-crm` ni con otros.
+2. Un `docker-compose.override.yml` (mismo patrón que `/opt/app-parejas`) que:
+   - renombra todos los `container_name` con prefijo `agentes-` (los oficiales chocan con las
+     otras instancias);
+   - conecta Kong a `agents_net` con el alias `supabase-kong`;
+   - **quita los puertos publicados de Kong (8000, 8443) y de Supavisor (5432, 6543)**;
+   - publica `db` solo en `127.0.0.1:5432` (para migraciones y `check-rls` desde el host).
+
    ```yaml
    services:
      kong:
+       container_name: agentes-kong
+       ports: !reset []
        networks:
          default: {}
          agents_net: { aliases: [supabase-kong] }
+     supavisor:
+       container_name: agentes-pooler
+       ports: !reset []
+     db:
+       container_name: agentes-db
+       ports: ["127.0.0.1:5432:5432"]
+     # ... container_name agentes-* en el resto de servicios
    networks:
      agents_net: { external: true }
    ```
-3. No publicar Kong ni Studio en Traefik (plan, 10.3). El puerto de Postgres solo en
-   `127.0.0.1` del VPS.
-4. En Auth: desactivar el registro público (`DISABLE_SIGNUP=true`); los usuarios los crea Ravyn.
+3. Ni Kong ni Studio se publican en Traefik (plan, 10.3).
+4. En Auth: `DISABLE_SIGNUP=true`; los usuarios los crea Ravyn.
+5. Opcional en la fase 0: apagar realtime, storage, functions y analytics si el compose
+   oficial lo permite sin romper dependencias.
 
 ## 3. Migraciones y verificación de RLS
 
-Desde el VPS (o por túnel SSH al puerto de Postgres en `127.0.0.1`):
+Con `db` publicado en `127.0.0.1:5432`, el usuario es `postgres` (sin sufijo de tenant, que
+solo pide Supavisor):
 
 ```bash
 cd /opt/ravyn-agents
-npx supabase db push --db-url "postgresql://postgres:<clave>@127.0.0.1:5432/postgres"
+DB_URL="postgresql://postgres:<clave>@127.0.0.1:5432/postgres"
+npx supabase db push --db-url "$DB_URL"
 npm ci --workspace=@ravyn/db
-npm run check-rls -- --db-url "postgresql://postgres:<clave>@127.0.0.1:5432/postgres"
+npm run check-rls -- --db-url "$DB_URL"
 ```
 
 `check-rls` debe imprimir que todas las tablas tienen RLS. La semilla `supabase/seed/dev.sql`
@@ -55,12 +79,18 @@ npm run check-rls -- --db-url "postgresql://postgres:<clave>@127.0.0.1:5432/post
 ```bash
 cd /opt/ravyn-agents/infra
 cp .env.example .env
-for f in web worker evolution evolution-db; do cp env/$f.env.example env/$f.env; done
+cp env/web.env.example env/web.env
+cp env/worker.env.example env/worker.env
 chmod 600 .env env/*.env
 ```
 
-Completar los valores (las claves de Supabase son las de la instancia dedicada). El web no
-lleva `ANTHROPIC_API_KEY` ni `EVOLUTION_API_KEY`.
+- `.env`: `TRAEFIK_NETWORK` y `TRAEFIK_CERTRESOLVER` del servidor. `APP_VERSION` lo fija
+  `deploy.sh`. Las variables de Evolution se pueden dejar vacías en la fase 0: sin valor, el
+  manager queda cerrado.
+- `env/web.env` y `env/worker.env`: claves de la instancia dedicada; `WORKER_INTERNAL_TOKEN` y
+  `ACTION_TOKEN_PEPPER` aleatorios e iguales en ambos. El web no lleva `ANTHROPIC_API_KEY` ni
+  `EVOLUTION_API_KEY`.
+- `env/evolution.env` y `env/evolution-db.env` se crean en la fase 1 (T1.5).
 
 ## 5. Primer despliegue
 
@@ -68,11 +98,12 @@ lleva `ANTHROPIC_API_KEY` ni `EVOLUTION_API_KEY`.
 echo "<token>" | docker login ghcr.io -u <usuario> --password-stdin
 cd /opt/ravyn-agents
 infra/scripts/deploy.sh <sha> --dry-run
-docker compose -f infra/docker-compose.yml up -d redis evolution-db evolution
+docker compose -f infra/docker-compose.yml up -d redis
 infra/scripts/deploy.sh <sha>
 ```
 
-`<sha>` es el commit de `main` cuyo CI publicó las imágenes.
+`<sha>` es un commit de `main` cuyo CI publicó las imágenes. Evolution y su Postgres están en
+el perfil `evolution` y no se levantan en la fase 0.
 
 ## 6. Verificación (criterio de aceptación de T0.8)
 
@@ -103,3 +134,13 @@ infra/scripts/deploy.sh <sha-nuevo>
 Si el healthcheck falla, el script muestra los últimos logs y el comando para volver a la
 versión anterior (`infra/scripts/deploy.sh <sha-anterior>`). Nunca usar
 `docker compose restart`: siempre `down` y `up -d` (el script ya lo hace).
+
+## 9. Fase 1: Evolution
+
+```bash
+cp infra/env/evolution.env.example infra/env/evolution.env
+cp infra/env/evolution-db.env.example infra/env/evolution-db.env
+chmod 600 infra/env/evolution*.env
+# definir EVOLUTION_VERSION, EVO_BASIC_AUTH y EVO_IP_ALLOWLIST en infra/.env
+docker compose -f infra/docker-compose.yml --profile evolution up -d evolution-db evolution
+```

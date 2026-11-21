@@ -102,7 +102,9 @@ dependencias; la imagen final no lleva `node_modules`.
 ## Despliegue (`infra/`)
 
 - `infra/docker-compose.yml`: web, worker, Redis, Evolution y su Postgres (plan, 10.2).
-  Supabase va aparte con su compose oficial, en la red externa `agents_net`.
+  Supabase va aparte con su compose oficial, en la red externa `agents_net`. Evolution está
+  en el perfil `evolution` (fase 1). La red y el certresolver de Traefik se configuran con
+  `TRAEFIK_NETWORK` y `TRAEFIK_CERTRESOLVER` en `infra/.env`.
 - `infra/.env.example` y `infra/env/*.env.example`: copiar sin `.example` en el VPS, con
   `chmod 600`. Nunca se suben a git.
 - `infra/scripts/deploy.sh <sha> [--dry-run]`: fija `APP_VERSION`, hace `pull`, `down`,

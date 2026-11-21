@@ -3,11 +3,17 @@
 #
 # Regla operativa: siempre `docker compose down && docker compose up -d`, nunca `restart`
 # (ver infra/scripts/deploy.sh). Variables de interpolación en infra/.env (ver .env.example).
+#
+# Evolution y su Postgres están en el perfil `evolution` y no arrancan por defecto (entran en
+# la fase 1, T1.5): `docker compose --profile evolution up -d evolution-db evolution`.
 name: ravyn-agents
 
 networks:
   agents_net: { external: true }
-  traefik_public: { external: true }
+  # Red externa de Traefik; su nombre real depende del servidor (TRAEFIK_NETWORK).
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik_public}
 
 x-logging: &logging
   driver: json-file
@@ -17,13 +23,13 @@ services:
   web:
     image: ghcr.io/clarexz/shiny-journey-web:${APP_VERSION:?define APP_VERSION en infra/.env}
     env_file: ./env/web.env
-    networks: [agents_net, traefik_public]
+    networks: [agents_net, traefik]
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik_public
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik_public}
       - traefik.http.routers.agents-web.rule=Host(`${APP_HOST:-app.ravyn-crm.cloud}`)
       - traefik.http.routers.agents-web.entrypoints=websecure
-      - traefik.http.routers.agents-web.tls.certresolver=le
+      - traefik.http.routers.agents-web.tls.certresolver=${TRAEFIK_CERTRESOLVER:-le}
       - traefik.http.services.agents-web.loadbalancer.server.port=3000
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
@@ -63,26 +69,29 @@ services:
     restart: unless-stopped
 
   evolution:
-    # Etiqueta exacta, nunca latest (runbook de actualización, plan 10.6).
-    image: evoapicloud/evolution-api:${EVOLUTION_VERSION:?define EVOLUTION_VERSION en infra/.env}
+    profiles: [evolution]
+    # Etiqueta exacta, nunca latest (runbook de actualización, plan 10.6). Sin valor, la
+    # etiqueta por defecto no existe y el pull falla: no se puede levantar por accidente.
+    image: evoapicloud/evolution-api:${EVOLUTION_VERSION:-define-EVOLUTION_VERSION}
     env_file: ./env/evolution.env
     volumes: [evolution_instances:/evolution/instances]
-    networks: [agents_net, traefik_public]
+    networks: [agents_net, traefik]
     depends_on: [evolution-db, redis]
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik_public
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik_public}
       - traefik.http.routers.evo.rule=Host(`${EVO_HOST:-evo.ravyn-crm.cloud}`)
       - traefik.http.routers.evo.entrypoints=websecure
-      - traefik.http.routers.evo.tls.certresolver=le
+      - traefik.http.routers.evo.tls.certresolver=${TRAEFIK_CERTRESOLVER:-le}
       - traefik.http.routers.evo.middlewares=evo-auth,evo-ipallow
-      - traefik.http.middlewares.evo-auth.basicauth.users=${EVO_BASIC_AUTH:?define EVO_BASIC_AUTH en infra/.env}
-      - traefik.http.middlewares.evo-ipallow.ipallowlist.sourcerange=${EVO_IP_ALLOWLIST:?define EVO_IP_ALLOWLIST en infra/.env}
+      - traefik.http.middlewares.evo-auth.basicauth.users=${EVO_BASIC_AUTH:-}
+      - traefik.http.middlewares.evo-ipallow.ipallowlist.sourcerange=${EVO_IP_ALLOWLIST:-127.0.0.1/32}
       - traefik.http.services.evo.loadbalancer.server.port=8080
     logging: *logging
     restart: unless-stopped
 
   evolution-db:
+    profiles: [evolution]
     image: postgres:16-alpine
     env_file: ./env/evolution-db.env
     volumes: [evolution_db:/var/lib/postgresql/data]

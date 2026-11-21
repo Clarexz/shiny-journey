@@ -52,7 +52,8 @@ compose() { docker compose --project-directory "$INFRA_DIR" -f "$INFRA_DIR/docke
 # --- Comprobaciones previas -------------------------------------------------------------
 
 missing=0
-for f in "$ENV_FILE" "$INFRA_DIR"/env/{web,worker,evolution,evolution-db}.env; do
+# Evolution (perfil `evolution`) no lo despliega este script: sus archivos no se exigen aquí.
+for f in "$ENV_FILE" "$INFRA_DIR"/env/{web,worker}.env; do
   if [[ ! -f "$f" ]]; then
     if [[ "$DRY_RUN" -eq 1 ]]; then warn "falta $f"; else fail "falta $f (ver ${f}.example)"; fi
     missing=1
@@ -62,8 +63,15 @@ for f in "$ENV_FILE" "$INFRA_DIR"/env/{web,worker,evolution,evolution-db}.env; d
   [[ "$perms" == "600" ]] || warn "$f tiene permisos $perms; deberían ser 600"
 done
 
+# Nombre real de la red de Traefik en este servidor (infra/.env, TRAEFIK_NETWORK).
+TRAEFIK_NETWORK="traefik_public"
+if [[ -f "$ENV_FILE" ]]; then
+  configured="$(sed -n 's/^TRAEFIK_NETWORK=//p' "$ENV_FILE" | tail -n1)"
+  [[ -n "$configured" ]] && TRAEFIK_NETWORK="$configured"
+fi
+
 if command -v docker >/dev/null 2>&1; then
-  for net in agents_net traefik_public; do
+  for net in agents_net "$TRAEFIK_NETWORK"; do
     if ! docker network inspect "$net" >/dev/null 2>&1; then
       if [[ "$DRY_RUN" -eq 1 ]]; then warn "no existe la red $net"; else fail "no existe la red $net"; fi
     fi
