@@ -1,0 +1,22 @@
+# Dependencias y builds
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Entorno y secretos (nunca en git)
+.env
+.env.*
+!.env.example
+!**/*.env.example
+infra/env/*.env
+
+# Sistema y editores
+.DS_Store
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
