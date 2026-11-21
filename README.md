@@ -98,3 +98,23 @@ curl localhost:3001/health   # {"ok":true,"redis":true,"db":true}
 
 El build (`npm run build -w apps/worker`) genera un solo archivo `dist/main.mjs` con todas las
 dependencias; la imagen final no lleva `node_modules`.
+
+## Despliegue (`infra/`)
+
+- `infra/docker-compose.yml`: web, worker, Redis, Evolution y su Postgres (plan, 10.2).
+  Supabase va aparte con su compose oficial, en la red externa `agents_net`.
+- `infra/.env.example` y `infra/env/*.env.example`: copiar sin `.example` en el VPS, con
+  `chmod 600`. Nunca se suben a git.
+- `infra/scripts/deploy.sh <sha> [--dry-run]`: fija `APP_VERSION`, hace `pull`, `down`,
+  `up -d` de web y worker y espera el healthcheck. Nunca usa `docker compose restart`.
+
+```bash
+infra/scripts/deploy.sh <sha> --dry-run
+```
+
+## CI (`.github/workflows/ci.yml`)
+
+En cada PR y push a `main`: lint, formato, typecheck, Supabase local, `check-rls`, pruebas
+(incluidas las de integración con Supabase y Redis), build de web y worker, validación de los
+compose y de `deploy.sh`, y gitleaks sobre el historial. En `main` además construye y publica
+`ghcr.io/clarexz/shiny-journey-{web,worker}:<sha>`.

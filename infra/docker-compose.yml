@@ -1,0 +1,101 @@
+# Servicios de la plataforma en el VPS (plan, 10.2). Supabase se despliega aparte con su
+# compose oficial, en la misma red externa agents_net.
+#
+# Regla operativa: siempre `docker compose down && docker compose up -d`, nunca `restart`
+# (ver infra/scripts/deploy.sh). Variables de interpolación en infra/.env (ver .env.example).
+name: ravyn-agents
+
+networks:
+  agents_net: { external: true }
+  traefik_public: { external: true }
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "20m", max-file: "5" }
+
+services:
+  web:
+    image: ghcr.io/clarexz/shiny-journey-web:${APP_VERSION:?define APP_VERSION en infra/.env}
+    env_file: ./env/web.env
+    networks: [agents_net, traefik_public]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_public
+      - traefik.http.routers.agents-web.rule=Host(`${APP_HOST:-app.ravyn-crm.cloud}`)
+      - traefik.http.routers.agents-web.entrypoints=websecure
+      - traefik.http.routers.agents-web.tls.certresolver=le
+      - traefik.http.services.agents-web.loadbalancer.server.port=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    logging: *logging
+    restart: unless-stopped
+
+  worker:
+    image: ghcr.io/clarexz/shiny-journey-worker:${APP_VERSION:?define APP_VERSION en infra/.env}
+    env_file: ./env/worker.env
+    networks: [agents_net] # sin Traefik: el webhook de Evolution es interno
+    depends_on: [redis]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    logging: *logging
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    # noeviction: BullMQ no debe perder trabajos.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes: [redis_data:/data]
+    networks: [agents_net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging: *logging
+    restart: unless-stopped
+
+  evolution:
+    # Etiqueta exacta, nunca latest (runbook de actualización, plan 10.6).
+    image: evoapicloud/evolution-api:${EVOLUTION_VERSION:?define EVOLUTION_VERSION en infra/.env}
+    env_file: ./env/evolution.env
+    volumes: [evolution_instances:/evolution/instances]
+    networks: [agents_net, traefik_public]
+    depends_on: [evolution-db, redis]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_public
+      - traefik.http.routers.evo.rule=Host(`${EVO_HOST:-evo.ravyn-crm.cloud}`)
+      - traefik.http.routers.evo.entrypoints=websecure
+      - traefik.http.routers.evo.tls.certresolver=le
+      - traefik.http.routers.evo.middlewares=evo-auth,evo-ipallow
+      - traefik.http.middlewares.evo-auth.basicauth.users=${EVO_BASIC_AUTH:?define EVO_BASIC_AUTH en infra/.env}
+      - traefik.http.middlewares.evo-ipallow.ipallowlist.sourcerange=${EVO_IP_ALLOWLIST:?define EVO_IP_ALLOWLIST en infra/.env}
+      - traefik.http.services.evo.loadbalancer.server.port=8080
+    logging: *logging
+    restart: unless-stopped
+
+  evolution-db:
+    image: postgres:16-alpine
+    env_file: ./env/evolution-db.env
+    volumes: [evolution_db:/var/lib/postgresql/data]
+    networks: [agents_net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution -d evolution"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging: *logging
+    restart: unless-stopped
+
+volumes:
+  redis_data: {}
+  evolution_instances: {}
+  evolution_db: {}
