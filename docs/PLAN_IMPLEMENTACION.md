@@ -1627,6 +1627,12 @@ GitHub Actions: `npm ci`, `lint`, `typecheck`, `vitest run`, harness (escenarios
 
 Formato de cada tarea: **ID. Título**; qué produce; criterio de aceptación verificable; dependencias. Cada tarea cabe en una sesión de Claude Code y deja el repo en verde (lint, typecheck y pruebas).
 
+**Trabajo en el VPS.** La sesión de desarrollo de cada fase no tiene acceso al VPS. Cuando una tarea, o una parte de ella, se tiene que hacer en el VPS (despliegues, Evolution, backups, pruebas en staging, cualquier cosa que toque servicios, datos o secretos de allá), la sesión de desarrollo no la deja como instrucciones sueltas: entrega un **prompt listo para pegar** en la sesión de Claude Code del VPS. Ese prompt debe:
+- Ser autocontenido: rama, secciones del plan y del runbook que hay que leer, pasos, criterios de aceptación y reglas (nada de números reales del doctor, no imprimir secretos ni contenido de mensajes, preguntar antes de acciones destructivas o de exponer algo a internet).
+- Decir qué necesita de una persona (teléfonos, DNS, IPs, aprobaciones) y en qué momento.
+- Indicar que los cambios al repo se entregan como commit en la rama de la fase y, si el VPS no puede hacer push, como parche (`git format-patch`) que se aplica en la sesión de desarrollo con `git am`.
+- **Terminar con un reporte para la sesión de desarrollo de la fase** (el chat normal, no el del VPS), para pegarlo ahí. El reporte incluye: qué se hizo y qué quedó pendiente; resultado de cada criterio de aceptación; versiones, nombres y hallazgos que afecten al código o al plan; cambios hechos al repo (commit o parche y cómo aplicarlo); estado en que quedó el VPS (servicios, instancias, datos borrados o conservados); y riesgos o decisiones abiertas. El reporte nunca incluye secretos, números reales ni contenido de mensajes.
+
 ### Fase 0. Fundaciones
 
 **T0.1. Monorepo y herramientas base**
@@ -1667,7 +1673,7 @@ Formato de cada tarea: **ID. Título**; qué produce; criterio de aceptación ve
 **T0.8. Primer despliegue en el VPS**
 - Produce: Supabase self-hosted dedicado levantado; red `agents_net`; DNS `app.ravyn-crm.cloud`; despliegue de web y worker; `docs/runbooks/deploy.md`.
 - Acepta: `https://app.ravyn-crm.cloud/login` carga con TLS válido; `docker exec worker wget -qO- localhost:3001/health` responde ok; las migraciones aplicadas pasan `check-rls` contra producción.
-- Depende de: T0.7. (Requiere acceso al VPS: la ejecuta una persona de Ravyn con apoyo de la sesión, o la sesión si tiene acceso.)
+- Depende de: T0.7. (Requiere acceso al VPS: se hace con un prompt para la sesión del VPS, según las reglas del inicio de esta sección.)
 
 ### Fase 1. MVP Apartador de turnos
 
