@@ -41,9 +41,9 @@ export interface ApiRoleGrant {
 export const API_ROLES = ["anon", "authenticated"] as const;
 
 /**
- * Tablas donde anon o authenticated tienen algún privilegio. Debe devolver una lista vacía:
- * RLS no cubre TRUNCATE, REFERENCES ni TRIGGER, así que el deny-all de la fase 0 también
- * exige quitar los grants (migración 202611230000_revoke_api_roles).
+ * Tablas donde anon o authenticated tienen algún privilegio. Debe devolver una lista vacía.
+ * RLS no cubre TRUNCATE, REFERENCES ni TRIGGER; PostgREST no los expone, pero el deny-all de
+ * la fase 0 no deja privilegios sobrantes (migración 202611230000_revoke_api_roles).
  */
 export async function findApiRoleGrants(
   client: SqlClient,
