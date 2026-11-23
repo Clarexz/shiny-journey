@@ -57,7 +57,15 @@ export interface ContractSubject {
   inbound?: ContractInboundFixtures;
   outbound?: ContractOutbound;
   /** Para probar `verifyWebhook`: secreto y encabezados firmados para un cuerpo. */
-  signature?: { secret: string; sign(raw: Buffer): Record<string, string> };
+  signature?: {
+    secret: string;
+    sign(raw: Buffer): Record<string, string>;
+    /**
+     * `false` si la verificación no depende del cuerpo (Evolution: token en un encabezado,
+     * no una firma HMAC). Por defecto `true`.
+     */
+    bindsBody?: boolean;
+  };
 }
 
 export function runChannelAdapterContract(
@@ -186,9 +194,11 @@ export function runChannelAdapterContract(
         const headers = s.signature.sign(raw);
         expect(s.adapter.verifyWebhook(raw, headers, s.signature.secret)).toBe(true);
         expect(s.adapter.verifyWebhook(raw, headers, `${s.signature.secret}x`)).toBe(false);
-        expect(s.adapter.verifyWebhook(Buffer.from("otro"), headers, s.signature.secret)).toBe(
-          false,
-        );
+        if (s.signature.bindsBody !== false) {
+          expect(s.adapter.verifyWebhook(Buffer.from("otro"), headers, s.signature.secret)).toBe(
+            false,
+          );
+        }
         expect(s.adapter.verifyWebhook(raw, {}, s.signature.secret)).toBe(false);
       });
     });

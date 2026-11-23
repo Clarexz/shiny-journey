@@ -1,8 +1,12 @@
 import { CONTRACT_DATA, runChannelAdapterContract } from "./testing/adapter-contract";
 import { FakeAdapter, FakeOutbox, signFakeWebhook, FAKE_SIGNATURE_HEADER } from "./fake/adapter";
 import type { FakeWebhookPayload } from "./fake/adapter";
+import { afterAll, beforeAll } from "vitest";
+import { EvolutionAdapter, WEBHOOK_TOKEN_HEADER } from "./evolution/adapter";
+import { evolutionFixtures, FIXTURE_INSTANCE } from "./evolution/fixtures";
+import { sendTextReply, startMockEvolution, type MockEvolution } from "./evolution/mock-server";
 
-// Cada adaptador agrega aquí su corrida del contrato (Evolution en T1.3 y T1.4, Meta en la fase 2).
+// Cada adaptador agrega aquí su corrida del contrato (Meta Cloud en la fase 2).
 
 const d = CONTRACT_DATA;
 
@@ -48,6 +52,43 @@ runChannelAdapterContract("fake", () => {
     signature: {
       secret: "s3cr3t",
       sign: (raw) => ({ [FAKE_SIGNATURE_HEADER]: signFakeWebhook(raw, "s3cr3t") }),
+    },
+  };
+});
+
+let evolution: MockEvolution;
+beforeAll(async () => {
+  evolution = await startMockEvolution();
+});
+afterAll(() => evolution.close());
+
+runChannelAdapterContract("evolution", () => {
+  evolution.reset();
+  evolution.on(`POST /message/sendText/${FIXTURE_INSTANCE}`, sendTextReply());
+  const adapter = new EvolutionAdapter({
+    client: { baseUrl: evolution.url, apiKey: "clave-falsa" },
+    channelId: "ch-1",
+    tenantId: "t-1",
+    instance: FIXTURE_INSTANCE,
+  });
+  return {
+    adapter,
+    channelId: "ch-1",
+    tenantId: "t-1",
+    inbound: evolutionFixtures,
+    outbound: {
+      sent: () =>
+        evolution.requests
+          .filter((r) => r.path.startsWith("/message/sendText/"))
+          .map((r) => {
+            const body = r.body as { number: string; text: string };
+            return { to: { phone: body.number }, text: body.text };
+          }),
+    },
+    signature: {
+      secret: "s3cr3t",
+      sign: () => ({ [WEBHOOK_TOKEN_HEADER]: "s3cr3t" }),
+      bindsBody: false,
     },
   };
 });

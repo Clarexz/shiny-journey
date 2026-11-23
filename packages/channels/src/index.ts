@@ -22,3 +22,32 @@ export {
 } from "./fake/adapter";
 export { dryRunDecorator, isDryRunAdapter, withDryRun } from "./dry-run";
 export { createChannelRegistry, type CreateChannelRegistryOptions } from "./create-registry";
+export {
+  EVOLUTION_CAPABILITIES,
+  EVOLUTION_INSTANCE_SETTINGS,
+  EVOLUTION_WEBHOOK_EVENTS,
+  EvolutionAdapter,
+  WEBHOOK_TOKEN_HEADER,
+  type EvolutionAdapterOptions,
+} from "./evolution/adapter";
+export {
+  DEFAULT_EVOLUTION_TIMEOUT_MS,
+  EvolutionClient,
+  type EvolutionClientOptions,
+  type EvolutionRequest,
+} from "./evolution/client";
+export {
+  extractContent,
+  mapConnectionState,
+  normalizeEventName,
+  parseEvolutionWebhook,
+  parseTimestamp,
+  type EvolutionParseContext,
+} from "./evolution/parse";
+export {
+  LID_ALT_FIELDS,
+  resolveSender,
+  type LidLookup,
+  type ResolvedSender,
+  type SenderSource,
+} from "./evolution/sender";

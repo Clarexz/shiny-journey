@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { EvolutionAdapter } from "./evolution/adapter";
 import { createChannelRegistry } from "./create-registry";
 import { withDryRun, isDryRunAdapter } from "./dry-run";
 import { FakeAdapter, FakeOutbox } from "./fake/adapter";
@@ -66,5 +67,26 @@ describe("dry-run", () => {
 
     const off = createChannelRegistry({ dryRun: false });
     expect(isDryRunAdapter(off.registry.create(row))).toBe(false);
+  });
+
+  it("con configuración de Evolution, registra su adaptador y dry-run cubre su envío", async () => {
+    const fetchSpy = vi.fn(async () => new Response("{}"));
+    const evolution = {
+      baseUrl: "http://evolution:8080",
+      apiKey: "k",
+      fetch: fetchSpy as unknown as typeof fetch,
+    };
+    const evoRow = { ...row, provider: "evolution" };
+
+    const off = createChannelRegistry({ dryRun: false, evolution });
+    expect(off.registry.create(evoRow)).toBeInstanceOf(EvolutionAdapter);
+    expect(createChannelRegistry({ dryRun: false }).registry.has("evolution")).toBe(false);
+
+    const on = createChannelRegistry({ dryRun: true, evolution });
+    await on.registry
+      .create(evoRow)
+      .sendText({ to: { phone: "5218991234567" }, text: "x", idempotencyKey: "k" });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(on.outbox.sent).toHaveLength(1);
   });
 });
