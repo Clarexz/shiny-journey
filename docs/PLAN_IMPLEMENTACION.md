@@ -1163,7 +1163,7 @@ Las reglas se evalúan en orden; la primera que decide, gana. Cada regla devuelv
 | 12 | Día no disponible (regla semanal o excepción) | DESCARTAR | `dia_no_disponible` | silencio |
 | 13 | Ya tiene un turno apartado ese día | DESCARTAR | `ya_tiene_turno` | silencio |
 | 14 | Ya se le escribió a ese publicador por ese turno | DESCARTAR | `duplicado` | no |
-| 15 | Remitente sin número y el envío a `@lid` no está soportado | NOTIFICAR | `remitente_sin_numero` | alta |
+| 15 | Remitente sin teléfono ni LID, o el envío a `@lid` falló (en Evolution v2.3.7 el envío a `@lid` funciona, T1.6; un remitente con LID se aparta escribiéndole al `@lid`) | NOTIFICAR | `remitente_sin_numero` | alta |
 | 16 | Límite de envíos excedido | NOTIFICAR | `limite_envios` | alta |
 | 17 | Agente en modo `observe` | OBSERVAR | `modo_observacion` | normal |
 | 18 | Sucursal ambigua mixta | según `ambiguityPolicy` | `sucursal_ambigua` | alta |
