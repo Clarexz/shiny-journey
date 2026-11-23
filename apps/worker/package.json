@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
+    "@ravyn/channels": "^0.0.0",
     "@ravyn/core": "^0.0.0",
     "@ravyn/db": "^0.0.0",
     "bullmq": "^6.7.8",

@@ -861,6 +861,14 @@ El handler del webhook resuelve `channelId` por la ruta y valida el token (compa
 
 Siempre se responde 200 en menos de 20 ms, para que Evolution no reintente.
 
+**Implementación de T1.8** (`apps/worker/src/webhooks/` y `src/routing/`):
+- La ruta es genérica, `POST /webhooks/:provider/:channelId/:token`, para que el harness use el adaptador Fake. Un canal desconocido, un token incorrecto o un proveedor distinto responden **404** sin detalle (no 401), para no revelar qué canales existen.
+- En el webhook solo se usa Redis (`SET NX` con TTL de 7 días) y la cola. La fila de `inbound_dedupe` (segunda barrera) la escribe el procesador de `inbound` en T1.15, y `channels.last_inbound_at` se actualiza en T1.18 (heartbeat), para no agregar escrituras a la base en el camino del webhook.
+- Si el encolado falla después de reservar el id, se libera la clave de deduplicación y se responde 500, para que el reintento de Evolution sí entre.
+- El id del trabajo es `{channelId}_{externalId}` (BullMQ no acepta `:` en ids personalizados).
+- La tabla de ruteo se recarga con `config:changed` (constante `CONFIG_CHANGED_CHANNEL` de `@ravyn/core`), al reconectar el suscriptor y cada 5 minutos como respaldo. Si una recarga falla se conserva la tabla anterior; un agente con config inválido o módulo desconocido se omite sin tumbar la tabla.
+- Los eventos `connection` y `qr` van a un manejador que por ahora solo registra el estado (T1.18 y T1.20 los procesan).
+
 ### 6.2 Pipeline
 
 ```

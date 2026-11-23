@@ -19,3 +19,4 @@ export {
   type ConfigIssue,
   type ConfigValidation,
 } from "./modules/registry";
+export { CONFIG_CHANGED_CHANNEL, type ConfigChangedMessage } from "./events";

@@ -1,4 +1,4 @@
 {
   "extends": "@ravyn/config/tsconfig.base.json",
-  "include": ["src", "build.mjs"]
+  "include": ["src", "test", "build.mjs"]
 }

@@ -24,3 +24,9 @@ export {
   type TableWithoutRls,
 } from "./check-rls";
 export type { Database, Json } from "./types.gen";
+export {
+  loadRoutingSnapshot,
+  type RoutingAgentRow,
+  type RoutingChannelRow,
+  type RoutingSnapshot,
+} from "./routing";
