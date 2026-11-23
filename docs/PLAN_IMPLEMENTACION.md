@@ -802,10 +802,10 @@ Un `ChannelRegistry` construye el adaptador a partir de la fila de `channels`. E
 WhatsApp está migrando a identificadores LID, que ocultan el número del participante en grupos. Estrategia en cascada, dentro de `resolveSender()`:
 
 1. Si `key.participant` termina en `@s.whatsapp.net`, se normaliza el teléfono y se termina.
-2. Si termina en `@lid`, se buscan campos alternos con el teléfono en el payload, en este orden: `key.participantAlt`, `key.participantPn` y `key.senderPn`. **Los nombres exactos dependen de la versión de Evolution y Baileys**; T1.6 captura payloads reales y fija la lista. Si alguno trae teléfono, se usa y se guarda en `wa_lid_map` con `source = 'payload_alt'`.
+2. Si termina en `@lid`, se buscan campos alternos con el teléfono en el payload, en este orden: `key.participantAlt` (grupos) y `key.remoteJidAlt` (DM). Lista fijada en T1.6 con Evolution v2.3.7 (`docs/notas/evolution-payloads.md`); en los mensajes propios (`fromMe`) el teléfono sale del `sender` del sobre del webhook. Si alguno trae teléfono, se usa y se guarda en `wa_lid_map` con `source = 'payload_alt'`.
 3. Si no, se consulta `wa_lid_map` (caché en memoria más Redis).
 4. Si no hay mapeo, se responde con el LID tal cual (`phone = null`) y se encola un refresco asíncrono de `getGroupParticipants(grupo)` para poblar el mapa la próxima vez.
-5. **Envío a un remitente sin teléfono**: se intenta `sendText` con el JID `@lid` (las versiones recientes de Baileys lo soportan). T1.6 valida esto con números de prueba. Si falla, la decisión pasa de APARTAR a NOTIFICAR, con el motivo `remitente_sin_numero`, y la notificación incluye el nombre (`pushName`) para que el doctor lo busque en el grupo.
+5. **Envío a un remitente sin teléfono**: se intenta `sendText` con el JID `@lid`. T1.6 lo validó con números de prueba en v2.3.7: **funciona**. Si falla, la decisión pasa de APARTAR a NOTIFICAR, con el motivo `remitente_sin_numero`, y la notificación incluye el nombre (`pushName`) para que el doctor lo busque en el grupo.
 
 Un scheduler refresca los participantes del grupo objetivo cada 6 horas y al reconectar.
 

@@ -1,0 +1,16 @@
+{
+  "event": "connection.update",
+  "instance": "ravyn-test",
+  "data": {
+    "instance": "ravyn-test",
+    "wuid": "5218990000001@s.whatsapp.net",
+    "profilePictureUrl": "https://mmg.whatsapp.net/v/fake/media.enc",
+    "state": "open",
+    "statusReason": 200
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T00:58:23.154Z",
+  "sender": "5218990000001@s.whatsapp.net",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}

@@ -25,10 +25,25 @@ describe("resolveSender (cascada de 5.4)", () => {
   it("2. respeta el orden de los campos alternos e ignora los que no son teléfono", () => {
     const r = resolveSender("123@lid", {
       participantAlt: "999@lid",
-      participantPn: "5218990001111@s.whatsapp.net",
-      senderPn: "5218990002222@s.whatsapp.net",
+      remoteJidAlt: "5218990001111@s.whatsapp.net",
     });
     expect(r.phone).toBe("5218990001111");
+  });
+
+  it("2. un remoteJidAlt de grupo no se toma como teléfono", () => {
+    expect(resolveSender("123@lid", { remoteJidAlt: "120363000000000001@g.us" })).toMatchObject({
+      phone: null,
+      source: "unresolved",
+    });
+  });
+
+  it("2. los nombres de Baileys 6.x ya no se consultan", () => {
+    expect(
+      resolveSender("123@lid", {
+        participantPn: "5218990001111@s.whatsapp.net",
+        senderPn: "5218990002222@s.whatsapp.net",
+      }).source,
+    ).toBe("unresolved");
   });
 
   it("3. @lid sin campo alterno: usa el mapa en memoria", () => {

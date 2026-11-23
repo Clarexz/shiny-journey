@@ -1,16 +1,20 @@
 import { lidFromJid, normalizePhone, parseJid } from "../phone";
 
 /**
- * Campos alternos del payload de Evolution que pueden traer el teléfono de un remitente `@lid`,
- * en orden de preferencia (plan, 5.4). Los nombres dependen de la versión de Evolution y Baileys:
- * T1.6 los fija con payloads reales.
+ * Campos alternos de `key` que traen el teléfono de un remitente `@lid`, en orden de preferencia
+ * (plan, 5.4). Fijados en T1.6 con payloads reales de Evolution v2.3.7 (Baileys 7.0.0-rc.9),
+ * ver docs/notas/evolution-payloads.md:
+ *
+ * - `participantAlt`: en grupos (`addressingMode: "lid"`), `key.participant` es el `@lid` y este
+ *   campo trae `521...@s.whatsapp.net`. No llega en los mensajes propios (`fromMe`).
+ * - `remoteJidAlt`: en DM. Esta versión ya entrega `remoteJid` con el teléfono y repite el mismo
+ *   valor aquí; se conserva por si `remoteJid` llega como `@lid`.
+ *
+ * `participantPn` y `senderPn` (nombres de Baileys 6.x) no aparecen en esta versión. En un
+ * grupo, un `remoteJidAlt` sería del chat y no un teléfono: `normalizePhone` lo descarta.
+ * Al cambiar `EVOLUTION_VERSION` hay que volver a validarlos (plan, 10.6).
  */
-export const LID_ALT_FIELDS = [
-  "participantAlt",
-  "participantPn",
-  "senderPn",
-  "remoteJidAlt",
-] as const;
+export const LID_ALT_FIELDS = ["participantAlt", "remoteJidAlt"] as const;
 
 /** Búsqueda síncrona en el mapa LID -> teléfono ya cargado en memoria (`wa_lid_map`). */
 export type LidLookup = (lid: string) => string | null;

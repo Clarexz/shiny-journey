@@ -1,0 +1,16 @@
+{
+  "event": "qrcode.updated",
+  "instance": "ravyn-test",
+  "data": {
+    "qrcode": {
+      "instance": "ravyn-test",
+      "pairingCode": "FAKE1234",
+      "code": "2@FAKEQRCODE,FAKEKEY1,FAKEKEY2,FAKEKEY3",
+      "base64": "data:image/png;base64,RkFLRQ=="
+    }
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T00:57:38.192Z",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}

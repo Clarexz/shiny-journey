@@ -1,4 +1,4 @@
-import { parseJid } from "../phone";
+import { normalizePhone, parseJid } from "../phone";
 import type { ChannelEvent, ChannelStatus, InboundMessage, InboundMessageType } from "../types";
 import { resolveSender, type LidLookup } from "./sender";
 
@@ -41,7 +41,8 @@ export function parseEvolutionWebhook(raw: unknown, ctx: EvolutionParseContext):
 
   switch (normalizeEventName(eventName)) {
     case "messages.upsert":
-      return parseMessagesUpsert(raw.data, ctx);
+      // `sender` del sobre es el JID propio de la instancia (`521...@s.whatsapp.net`).
+      return parseMessagesUpsert(raw.data, ctx, str(raw.sender));
     case "connection.update":
       return [parseConnectionUpdate(raw.data)];
     case "qrcode.updated":
@@ -57,7 +58,11 @@ function ignored(reason: string): ChannelEvent {
 
 // messages.upsert
 
-function parseMessagesUpsert(data: unknown, ctx: EvolutionParseContext): ChannelEvent[] {
+function parseMessagesUpsert(
+  data: unknown,
+  ctx: EvolutionParseContext,
+  ownJid: string | null,
+): ChannelEvent[] {
   // v2 manda un objeto; algunas versiones mandan un arreglo o `{ messages: [...] }`.
   const items = Array.isArray(data)
     ? data
@@ -66,10 +71,15 @@ function parseMessagesUpsert(data: unknown, ctx: EvolutionParseContext): Channel
       : [data];
   if (items.length === 0) return [ignored("payload_invalido")];
   const receivedAt = ctx.now();
-  return items.map((item) => parseMessage(item, ctx, receivedAt));
+  return items.map((item) => parseMessage(item, ctx, receivedAt, ownJid));
 }
 
-function parseMessage(item: unknown, ctx: EvolutionParseContext, receivedAt: Date): ChannelEvent {
+function parseMessage(
+  item: unknown,
+  ctx: EvolutionParseContext,
+  receivedAt: Date,
+  ownJid: string | null,
+): ChannelEvent {
   if (!isObj(item) || !isObj(item.key)) return ignored("payload_invalido");
   const key = item.key;
   const remoteJid = str(key.remoteJid);
@@ -82,7 +92,17 @@ function parseMessage(item: unknown, ctx: EvolutionParseContext, receivedAt: Dat
 
   const senderJid = isGroup ? (str(key.participant) ?? str(item.participant)) : remoteJid;
   if (!senderJid) return ignored("payload_invalido");
-  const sender = resolveSender(senderJid, key, ctx.lidLookup);
+  const fromMe = key.fromMe === true;
+  let sender = resolveSender(senderJid, key, ctx.lidLookup);
+  // Mensajes propios (T1.6, v2.3.7): en DM `remoteJid` es el otro participante, y en grupo
+  // `key.participant` es el `@lid` propio sin `participantAlt`. El remitente real es la
+  // instancia, cuyo JID viene en el sobre del webhook.
+  const ownPhone = fromMe ? normalizePhone(ownJid) : null;
+  if (ownJid && ownPhone) {
+    sender = isGroup
+      ? { ...sender, phone: ownPhone, source: "payload_alt" }
+      : { jid: ownJid, phone: ownPhone, lid: null, source: "jid" };
+  }
 
   const waTimestamp = parseTimestamp(item.messageTimestamp) ?? receivedAt;
   const { type, text } = extractContent(item.message);
@@ -94,7 +114,7 @@ function parseMessage(item: unknown, ctx: EvolutionParseContext, receivedAt: Dat
     externalId,
     chat: { jid: remoteJid, kind: isGroup ? "group" : "direct" },
     sender: { jid: sender.jid, phone: sender.phone, lid: sender.lid, name: str(item.pushName) },
-    fromMe: key.fromMe === true,
+    fromMe,
     type,
     text,
     waTimestamp,

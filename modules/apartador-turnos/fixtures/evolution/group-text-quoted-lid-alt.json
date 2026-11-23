@@ -1,0 +1,113 @@
+{
+  "event": "messages.upsert",
+  "instance": "ravyn-test",
+  "data": {
+    "key": {
+      "remoteJid": "120363000000000001@g.us",
+      "fromMe": false,
+      "id": "3EB0FAKE000000000000000000000004",
+      "participant": "100000000000003@lid",
+      "participantAlt": "5218990000002@s.whatsapp.net",
+      "addressingMode": "lid"
+    },
+    "pushName": "Persona B",
+    "status": "DELIVERY_ACK",
+    "message": {
+      "senderKeyDistributionMessage": {
+        "groupId": "120363000000000001@g.us",
+        "axolotlSenderKeyDistributionMessage": {
+          "0": 0,
+          "1": 7,
+          "2": 14,
+          "3": 21,
+          "4": 28,
+          "5": 35,
+          "6": 42,
+          "7": 49,
+          "8": 56,
+          "9": 63,
+          "10": 70,
+          "11": 77,
+          "12": 84,
+          "13": 91,
+          "14": 98,
+          "15": 105,
+          "16": 112,
+          "17": 119,
+          "18": 126,
+          "19": 133,
+          "20": 140,
+          "21": 147,
+          "22": 154,
+          "23": 161,
+          "24": 168,
+          "25": 175,
+          "26": 182,
+          "27": 189,
+          "28": 196,
+          "29": 203,
+          "30": 210,
+          "31": 217
+        }
+      },
+      "messageContextInfo": {
+        "threadId": [],
+        "messageSecret": {
+          "0": 0,
+          "1": 7,
+          "2": 14,
+          "3": 21,
+          "4": 28,
+          "5": 35,
+          "6": 42,
+          "7": 49,
+          "8": 56,
+          "9": 63,
+          "10": 70,
+          "11": 77,
+          "12": 84,
+          "13": 91,
+          "14": 98,
+          "15": 105,
+          "16": 112,
+          "17": 119,
+          "18": 126,
+          "19": 133,
+          "20": 140,
+          "21": 147,
+          "22": 154,
+          "23": 161,
+          "24": 168,
+          "25": 175,
+          "26": 182,
+          "27": 189,
+          "28": 196,
+          "29": 203,
+          "30": 210,
+          "31": 217
+        }
+      },
+      "conversation": "Prueba: texto 4"
+    },
+    "contextInfo": {
+      "mentionedJid": [],
+      "groupMentions": [],
+      "statusAttributions": [],
+      "stanzaId": "3EB0FAKE000000000000000000000001",
+      "participant": "100000000000001@lid",
+      "quotedMessage": {
+        "conversation": "Prueba: texto 1"
+      },
+      "quotedType": 0
+    },
+    "messageType": "conversation",
+    "messageTimestamp": 1795406368,
+    "instanceId": "00000000-0000-4000-8000-000000000001",
+    "source": "android"
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T00:59:38.713Z",
+  "sender": "5218990000001@s.whatsapp.net",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}

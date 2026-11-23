@@ -146,3 +146,16 @@ chmod 600 infra/env/evolution*.env
 # definir EVOLUTION_VERSION, EVO_BASIC_AUTH y EVO_IP_ALLOWLIST en infra/.env
 docker compose -f infra/docker-compose.yml --profile evolution up -d evolution-db evolution
 ```
+
+Versión fijada en T1.5: `EVOLUTION_VERSION=v2.3.7` (motivos y hallazgos en
+`docs/notas/evolution-payloads.md`). La imagen trae un `.env` interno con casi todo en `true`
+(guardar mensajes, contactos, `IsOnWhatsapp`, telemetría): no quitar variables de
+`evolution.env` sin revisarlo. Mientras no haya DNS ni IPs de Ravyn, el manager queda cerrado
+(`EVO_IP_ALLOWLIST=127.0.0.1/32`). Para operar la API se usa la red interna `agents_net`.
+
+Después de conectar un número y de intercambiar mensajes, verificar la persistencia mínima
+(sale con 1 si alguna tabla de mensajes, chats, contactos, media o `IsOnWhatsapp` tiene filas):
+
+```bash
+infra/scripts/verify-evolution-privacy.sh
+```

@@ -1,0 +1,13 @@
+{
+  "event": "connection.update",
+  "instance": "ravyn-test",
+  "data": {
+    "instance": "ravyn-test",
+    "state": "connecting",
+    "statusReason": 200
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T00:57:36.545Z",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}

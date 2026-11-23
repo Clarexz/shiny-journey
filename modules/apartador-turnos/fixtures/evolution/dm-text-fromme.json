@@ -1,0 +1,28 @@
+{
+  "event": "messages.upsert",
+  "instance": "ravyn-test",
+  "data": {
+    "key": {
+      "remoteJid": "5218990000002@s.whatsapp.net",
+      "remoteJidAlt": "5218990000002@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB0FAKE000000000000000000000002",
+      "participant": "",
+      "addressingMode": "lid"
+    },
+    "pushName": "Persona A",
+    "status": "SERVER_ACK",
+    "message": {
+      "conversation": "Prueba: texto 2"
+    },
+    "messageType": "conversation",
+    "messageTimestamp": 1795406333,
+    "instanceId": "00000000-0000-4000-8000-000000000001",
+    "source": "android"
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T00:59:38.254Z",
+  "sender": "5218990000001@s.whatsapp.net",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}

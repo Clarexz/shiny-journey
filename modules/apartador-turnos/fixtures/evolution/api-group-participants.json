@@ -1,0 +1,19 @@
+{
+  "participants": [
+    {
+      "id": "100000000000001@lid",
+      "phoneNumber": "5218990000001@s.whatsapp.net",
+      "admin": "superadmin"
+    },
+    {
+      "id": "100000000000002@lid",
+      "phoneNumber": "5218990000003@s.whatsapp.net",
+      "admin": null
+    },
+    {
+      "id": "100000000000003@lid",
+      "phoneNumber": "5218990000002@s.whatsapp.net",
+      "admin": null
+    }
+  ]
+}

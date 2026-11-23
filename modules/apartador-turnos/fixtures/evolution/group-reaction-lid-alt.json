@@ -1,0 +1,41 @@
+{
+  "event": "messages.upsert",
+  "instance": "ravyn-test",
+  "data": {
+    "key": {
+      "remoteJid": "120363000000000001@g.us",
+      "fromMe": false,
+      "id": "3EB0FAKE000000000000000000000006",
+      "participant": "100000000000003@lid",
+      "participantAlt": "5218990000002@s.whatsapp.net",
+      "addressingMode": "lid"
+    },
+    "pushName": "Persona B",
+    "status": "DELIVERY_ACK",
+    "message": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "120363000000000001@g.us",
+          "fromMe": true,
+          "id": "3EB0FAKE000000000000000000000001",
+          "participant": "100000000000001@lid"
+        },
+        "text": "👍",
+        "senderTimestampMs": {
+          "low": 110078852,
+          "high": 418,
+          "unsigned": false
+        }
+      }
+    },
+    "messageType": "reactionMessage",
+    "messageTimestamp": 1795406408,
+    "instanceId": "00000000-0000-4000-8000-000000000001",
+    "source": "android"
+  },
+  "destination": "http://evo-capture:3000/webhooks/evolution/ch-test/tok-test",
+  "date_time": "2026-11-23T01:00:08.862Z",
+  "sender": "5218990000001@s.whatsapp.net",
+  "server_url": "http://evolution:8080",
+  "apikey": "00000000-0000-4000-8000-0000000000aa"
+}
