@@ -1,0 +1,22 @@
+{
+  "name": "@ravyn/channels",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/adapter-contract.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@ravyn/config": "^0.0.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

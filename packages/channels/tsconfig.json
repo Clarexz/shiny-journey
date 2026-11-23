@@ -1,0 +1,4 @@
+{
+  "extends": "@ravyn/config/tsconfig.base.json",
+  "include": ["src"]
+}

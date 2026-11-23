@@ -20,6 +20,7 @@ apps/
 packages/
   config/     tsconfig base, ESLint y Vitest compartidos
   core/       tipos de dominio, contexto de tenant, registro de módulos
+  channels/   interfaz ChannelAdapter, normalización de teléfonos, registro, Fake y dry-run
   db/         cliente admin de Supabase, tipos generados, tenantTable(), check-rls
 modules/      módulos de agente (fase 1: apartador-turnos)
 supabase/     config.toml, migraciones y semillas
