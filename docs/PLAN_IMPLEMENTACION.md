@@ -1214,6 +1214,17 @@ Las reglas 2 y 3 van primero a propósito: los descartes duros se deciden con lo
 | "Busco cobertura para hoy turno matutino en Reynosa 51" | suc 51 (F-7544, no aceptada), hoy, matutino | DESCARTAR `sucursal_no_aceptada` |
 | "Buenos días busco cobertura para hoy 9 noviembre matutino en cumbres Reynosa 3" | S-0404 resuelta por "cumbres", 2026-11-09, matutino | **APARTAR** |
 
+**Ajustes de T1.12** (`modules/apartador-turnos/src/config.ts` y `src/server/rules.ts`):
+- `groupJid` empieza en `null` y `branches.accepted` puede estar vacío: así el config por defecto es válido (el registro de módulos lo exige) y el grupo y las sucursales se llenan en el panel. Sin grupo, el agente no tiene disparadores; sin sucursales, todo cae en la regla 2.
+- `TemplateSchema = { id, text }`. El `id` va a `outbound_messages.template_id`. El texto solo admite los placeholders de 7.8 y no admite enlaces ni emojis, y las de `interestAmbiguous` deben incluir `{colonia}`.
+- `checkConfigAgainstCatalog()` revisa lo que no cabe en Zod: claves que no existen o que no corresponden a ese número, y alias que también identifican a la gemela.
+- La disponibilidad, los claims y el cupo de envíos llegan por interfaces. La regla 16 solo **consulta** el cupo (`sendBudget.check`) y `act` lo consume; si las reglas consumieran, un mensaje en modo observación gastaría envíos.
+- `earlyDecision()` evalúa las reglas 1 a 3 antes de llamar al LLM.
+- Regla 2 con varias sucursales: solo descarta si todas son no aceptadas; si no, sigue a la regla 5.
+- Regla 4 también aplica si falta la fecha o la sucursal.
+- Regla 15: si hay LID y el canal puede escribirle, `sendTo` es el JID `@lid`.
+- Regla 17 (observación) va antes que la 18, así que una ambigua en observación queda como OBSERVAR con la plantilla y la referencia que habría usado.
+
 ### 7.8 Plantillas de mensaje
 
 Reglas de variación:
