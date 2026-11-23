@@ -1030,6 +1030,13 @@ Reconoce, en orden:
 
 Resultado: `{ fechas: string[], confianza: number, fuente: "regex" }`. Confianza 1.0 si hay exactamente una expresión de fecha y es consistente. Si hay conectores de varias fechas (`y`, `,`, `al`, `del ... al`), o expresiones que no reconoce (`fin de semana`, `la otra semana`), o ninguna fecha, se marca `requiereLlm = true`.
 
+**Ajustes de T1.11** (`modules/apartador-turnos/src/server/dates.ts`):
+- Sin date-fns: la fecha local sale de `Intl` con la zona del tenant (la base de datos de zonas del runtime, con el horario de verano de Matamoros), y las sumas de días se hacen sobre fechas de calendario en UTC. Se cumple igual "nunca con desplazamientos fijos".
+- "mañana" como turno (`de la`, `en la`, `por la`, `turno de (la)`) se retira antes de buscar fechas. Cualquier otro "mañana" es fecha. Las formas del plan (`para manana`, `el dia de manana`, `manana <dia>`, `manana turno` en cualquier posición) dan confianza 1; las demás ("cobertura mañana en la mañana"), 0.85.
+- Listas de días con el mes al final ("14 y 15 de noviembre") dan todas las fechas. Antes solo se habría visto la última, con confianza 1.
+- `hoy <dd>` o `<dia> <dd>` sin mes se verifican contra el día del mes. Si no coinciden, se usa el número con confianza 0.3 y va al LLM.
+- La salida es `{ dates, confidence, requiresLlm, issues }`, con códigos estables en `issues` (`varias_fechas`, `incoherente`, `sin_fecha`, `expresion_no_reconocida`, `fecha_invalida`, `manana_ambigua`).
+
 ### 7.5 Resolvedor de sucursal
 
 Entrada: número `n` y texto normalizado. Candidatos: `branches where city = 'reynosa' and number = n`.
