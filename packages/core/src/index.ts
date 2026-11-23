@@ -9,3 +9,13 @@ export {
   type Role,
   type TenantRole,
 } from "./auth/roles";
+export * from "./agents/types";
+export { createTiming } from "./agents/timing";
+export * from "./modules/types";
+export {
+  ModuleRegistry,
+  ModuleRegistryError,
+  groupJidsFromTriggers,
+  type ConfigIssue,
+  type ConfigValidation,
+} from "./modules/registry";

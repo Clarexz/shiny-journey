@@ -651,6 +651,8 @@ export const MODULES = { [apartadorTurnos.key]: apartadorTurnos } as const;
 
 Agregar un módulo nuevo implica crear el paquete, añadir una línea al registro y su manifiesto de UI, y escribir las migraciones `mod_<clave>_*` si las necesita. No se toca el núcleo.
 
+**Ajuste de T1.7**: `packages/core` no puede importar los módulos, porque ellos dependen de `core` (sería un ciclo). `core` exporta la clase `ModuleRegistry` (valida clave, semver, que `defaultConfig()` pase su esquema y que un módulo `agent` tenga `server()`; da `validateConfig()` con errores por campo, `triggers()`, `missingCapabilities()` y `loadPipeline()`). La lista concreta (`new ModuleRegistry([apartadorTurnos])`) se arma en el worker y en el web. Además, `decide()` y `act()` reciben también el `InboundMessage`, porque la acción necesita al remitente. El módulo `echo` (`@ravyn/core/testing`) solo existe para pruebas.
+
 ### 4.3 Activación por tenant
 
 Desde el panel interno (sección 9), en tres pasos dentro de una transacción en un route handler del panel interno:
