@@ -4,6 +4,9 @@
 # Regla operativa: siempre `docker compose down && docker compose up -d`, nunca `restart`
 # (ver infra/scripts/deploy.sh). Variables de interpolación en infra/.env (ver .env.example).
 #
+# Sin APP_VERSION la etiqueta por defecto no existe y el pull de web/worker falla, pero el
+# resto del compose sigue siendo válido (por ejemplo `up -d redis` antes del primer deploy).
+#
 # Evolution y su Postgres están en el perfil `evolution` y no arrancan por defecto (entran en
 # la fase 1, T1.5): `docker compose --profile evolution up -d evolution-db evolution`.
 name: ravyn-agents
@@ -21,7 +24,7 @@ x-logging: &logging
 
 services:
   web:
-    image: ghcr.io/clarexz/shiny-journey-web:${APP_VERSION:?define APP_VERSION en infra/.env}
+    image: ghcr.io/clarexz/shiny-journey-web:${APP_VERSION:-define-APP_VERSION}
     env_file: ./env/web.env
     networks: [agents_net, traefik]
     labels:
@@ -41,7 +44,7 @@ services:
     restart: unless-stopped
 
   worker:
-    image: ghcr.io/clarexz/shiny-journey-worker:${APP_VERSION:?define APP_VERSION en infra/.env}
+    image: ghcr.io/clarexz/shiny-journey-worker:${APP_VERSION:-define-APP_VERSION}
     env_file: ./env/worker.env
     networks: [agents_net] # sin Traefik: el webhook de Evolution es interno
     depends_on: [redis]

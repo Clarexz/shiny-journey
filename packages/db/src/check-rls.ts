@@ -29,3 +29,36 @@ export async function findTablesWithoutRls(
   );
   return rows;
 }
+
+export interface ApiRoleGrant {
+  schema: string;
+  table: string;
+  grantee: string;
+  privileges: string[];
+}
+
+/** Roles de la API de Supabase que usan las claves públicas o las sesiones del navegador. */
+export const API_ROLES = ["anon", "authenticated"] as const;
+
+/**
+ * Tablas donde anon o authenticated tienen algún privilegio. Debe devolver una lista vacía:
+ * RLS no cubre TRUNCATE, REFERENCES ni TRIGGER, así que el deny-all de la fase 0 también
+ * exige quitar los grants (migración 202611230000_revoke_api_roles).
+ */
+export async function findApiRoleGrants(
+  client: SqlClient,
+  schemas: readonly string[] = ["public"],
+  roles: readonly string[] = API_ROLES,
+): Promise<ApiRoleGrant[]> {
+  const { rows } = await client.query<ApiRoleGrant>(
+    `select table_schema as schema, table_name as "table", grantee,
+            array_agg(privilege_type::text order by privilege_type) as privileges
+       from information_schema.role_table_grants
+      where table_schema = any($1::text[])
+        and grantee = any($2::text[])
+      group by 1, 2, 3
+      order by 1, 2, 3`,
+    [schemas, roles],
+  );
+  return rows;
+}

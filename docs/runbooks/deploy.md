@@ -15,7 +15,8 @@ de contenedores. Hay un único Traefik compartido (stack `/docker/n8n`): no se m
   `TRAEFIK_CERTRESOLVER` (en el VPS de Ravyn: `n8n_default` y `mytlschallenge`).
 - DNS: registro A de `app.ravyn-crm.cloud` a la IP del VPS. Sin esto, Let's Encrypt no emite
   el certificado. `evo.ravyn-crm.cloud` solo hace falta en la fase 1.
-- Acceso de lectura a GHCR: un token de GitHub con `read:packages`.
+- Las imágenes de GHCR son públicas (el repo es público): no hace falta `docker login`. Si el
+  repo o los paquetes se vuelven privados, hará falta un token con `read:packages`.
 - Node 22 para los comandos `npx`. Si el host no lo tiene, usar un contenedor:
   `docker run --rm -it --network host -v "$PWD:/w" -w /w node:22-alpine <comando>`.
 
@@ -66,12 +67,13 @@ solo pide Supavisor):
 ```bash
 cd /opt/ravyn-agents
 DB_URL="postgresql://postgres:<clave>@127.0.0.1:5432/postgres"
-npx supabase db push --db-url "$DB_URL"
+npx supabase db push --remote="$DB_URL"   # Supabase CLI 3.x (antes --db-url)
 npm ci --workspace=@ravyn/db
 npm run check-rls -- --db-url "$DB_URL"
 ```
 
-`check-rls` debe imprimir que todas las tablas tienen RLS. La semilla `supabase/seed/dev.sql`
+`check-rls` debe imprimir que todas las tablas tienen RLS y que `anon`/`authenticated` no
+tienen privilegios (la migración `202611230000_revoke_api_roles` se los quita). La semilla `supabase/seed/dev.sql`
 **no** se aplica en producción.
 
 ## 4. Archivos de entorno
@@ -95,7 +97,6 @@ chmod 600 .env env/*.env
 ## 5. Primer despliegue
 
 ```bash
-echo "<token>" | docker login ghcr.io -u <usuario> --password-stdin
 cd /opt/ravyn-agents
 infra/scripts/deploy.sh <sha> --dry-run
 docker compose -f infra/docker-compose.yml up -d redis
@@ -109,7 +110,8 @@ el perfil `evolution` y no se levantan en la fase 0.
 
 ```bash
 curl -sI https://app.ravyn-crm.cloud/login | head -1      # HTTP/2 200, TLS válido
-docker compose -f infra/docker-compose.yml exec worker wget -qO- localhost:3001/health
+# 127.0.0.1, no localhost: en el contenedor localhost resuelve a ::1 y el worker escucha en IPv4.
+docker compose -f infra/docker-compose.yml exec worker wget -qO- 127.0.0.1:3001/health
 # {"ok":true,"redis":true,"db":true}
 ```
 

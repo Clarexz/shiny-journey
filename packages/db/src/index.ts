@@ -15,5 +15,12 @@ export {
   type QueryResult,
 } from "./tenant-table";
 export { getTenant, getUserProfile, type TenantRecord, type UserProfile } from "./users";
-export { findTablesWithoutRls, type SqlClient, type TableWithoutRls } from "./check-rls";
+export {
+  API_ROLES,
+  findApiRoleGrants,
+  findTablesWithoutRls,
+  type ApiRoleGrant,
+  type SqlClient,
+  type TableWithoutRls,
+} from "./check-rls";
 export type { Database, Json } from "./types.gen";

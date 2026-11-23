@@ -1,6 +1,6 @@
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { findTablesWithoutRls, type SqlClient } from "./check-rls";
+import { findApiRoleGrants, findTablesWithoutRls, type SqlClient } from "./check-rls";
 
 describe("findTablesWithoutRls (unidad)", () => {
   it("pasa los esquemas como parámetro y devuelve las filas", async () => {
@@ -31,6 +31,25 @@ describe.skipIf(!DATABASE_URL)("findTablesWithoutRls (integración)", () => {
 
   it("las migraciones dejan todas las tablas de public con RLS", async () => {
     await expect(findTablesWithoutRls(client)).resolves.toEqual([]);
+  });
+
+  it("anon y authenticated no tienen privilegios en public", async () => {
+    await expect(findApiRoleGrants(client)).resolves.toEqual([]);
+  });
+
+  it("una tabla nueva tampoco hereda privilegios para anon/authenticated", async () => {
+    await client.query("begin");
+    try {
+      await client.query("create table public.__grants_probe (id int)");
+      await client.query("alter table public.__grants_probe enable row level security");
+      expect(await findApiRoleGrants(client)).toEqual([]);
+      await client.query("grant truncate on public.__grants_probe to anon");
+      expect(await findApiRoleGrants(client)).toEqual([
+        { schema: "public", table: "__grants_probe", grantee: "anon", privileges: ["TRUNCATE"] },
+      ]);
+    } finally {
+      await client.query("rollback");
+    }
   });
 
   it("detecta una tabla nueva sin RLS (dentro de una transacción que se revierte)", async () => {
