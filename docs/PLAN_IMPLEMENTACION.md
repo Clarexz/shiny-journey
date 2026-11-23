@@ -1010,6 +1010,12 @@ Prefiltro: `RE_COBERTURA` y al menos una coincidencia de `RE_SUCURSAL` sobre el 
 
 Turno: `ambos` tiene prioridad. Si hay `matutino` y `vespertino` sin `ambos`, también cuenta como ambos. Si no hay ninguno, `turno = null`.
 
+**Ajustes de T1.10** (`modules/apartador-turnos/src/server/`):
+- `RE_COBERTURA` acepta también `coberturas` y las formas de "cubrir" (`cubrir`, `cubra`, `cubran`, `cubre`, `cubren`). Un falso negativo del prefiltro es una oportunidad perdida que nadie ve (el mensaje no se persiste); lo que pase de más lo filtran las reglas.
+- `RE_TURNO` reconoce además `de la manana` y `de la tarde`.
+- `resolveBranch()` trata la referencia (`label`) y los `aliases` de cada sucursal aceptada como palabras clave de ese código. Si el texto nombra a las dos gemelas, queda ambigua entre ellas. `aliasConflicts()` detecta un alias que choque con la gemela del mismo número; T1.12 lo usa al validar el config.
+- La lista del doctor está en `modules/apartador-turnos/fixtures/doctor-accepted.ts`, y los 5 mensajes reales, con su hora de referencia y su resultado esperado, en `fixtures/real-messages.ts`.
+
 ### 7.4 Parser de fechas determinista (camino rápido)
 
 Recibe el texto normalizado y `ahora` (desde `waTimestamp`, en `America/Matamoros` con date-fns-tz; **nunca con desplazamientos fijos**, porque Reynosa, como municipio fronterizo, sigue el horario de verano de EE. UU.).
