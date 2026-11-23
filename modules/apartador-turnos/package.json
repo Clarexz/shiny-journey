@@ -1,0 +1,20 @@
+{
+  "name": "@ravyn/module-apartador-turnos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./catalog": "./src/catalog/branches.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "gen:branches": "tsx scripts/gen-branches-migration.ts"
+  },
+  "devDependencies": {
+    "@ravyn/config": "^0.0.0",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.1"
+  }
+}

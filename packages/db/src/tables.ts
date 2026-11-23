@@ -21,10 +21,19 @@ export type TenantTableName = {
 export const TENANT_TABLES = [
   "agent_config_history",
   "agent_configs",
+  "agent_events",
   "audit_log",
+  "captured_messages",
   "channel_status_events",
   "channels",
+  "inbound_dedupe",
+  "mod_turnos_availability",
+  "mod_turnos_claims",
+  "notifications",
+  "outbound_messages",
+  "push_subscriptions",
   "users",
+  "wa_lid_map",
 ] as const satisfies readonly TenantTableName[];
 
 type MissingTenantTables = Exclude<TenantTableName, (typeof TENANT_TABLES)[number]>;

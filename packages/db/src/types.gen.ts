@@ -107,6 +107,70 @@ export type Database = {
           },
         ];
       };
+      agent_events: {
+        Row: {
+          agent_config_id: string;
+          captured_message_id: string | null;
+          created_at: string;
+          decision: string | null;
+          extraction: Json | null;
+          feedback: string | null;
+          feedback_at: string | null;
+          id: string;
+          kind: string;
+          latency: Json | null;
+          llm: Json | null;
+          reasons: string[];
+          tenant_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agent_config_id: string;
+          captured_message_id?: string | null;
+          created_at?: string;
+          decision?: string | null;
+          extraction?: Json | null;
+          feedback?: string | null;
+          feedback_at?: string | null;
+          id?: string;
+          kind: string;
+          latency?: Json | null;
+          llm?: Json | null;
+          reasons?: string[];
+          tenant_id: string;
+        };
+        Update: {
+          agent_config_id?: string;
+          captured_message_id?: string | null;
+          created_at?: string;
+          decision?: string | null;
+          extraction?: Json | null;
+          feedback?: string | null;
+          feedback_at?: string | null;
+          id?: string;
+          kind?: string;
+          latency?: Json | null;
+          llm?: Json | null;
+          reasons?: string[];
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "agent_events_agent_config_fk";
+            columns: ["agent_config_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_configs";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "agent_events_captured_message_fk";
+            columns: ["captured_message_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "captured_messages";
+            referencedColumns: ["id", "tenant_id"];
+          },
+        ];
+      };
       audit_log: {
         Row: {
           action: string;
@@ -150,6 +214,73 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tenants";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      captured_messages: {
+        Row: {
+          agent_config_id: string;
+          channel_id: string;
+          chat_jid: string;
+          created_at: string;
+          external_id: string;
+          id: string;
+          received_at: string;
+          sender_jid: string;
+          sender_name: string | null;
+          sender_phone: string | null;
+          tenant_id: string;
+          text: string | null;
+          text_purged_at: string | null;
+          wa_timestamp: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agent_config_id: string;
+          channel_id: string;
+          chat_jid: string;
+          created_at?: string;
+          external_id: string;
+          id?: string;
+          received_at: string;
+          sender_jid: string;
+          sender_name?: string | null;
+          sender_phone?: string | null;
+          tenant_id: string;
+          text?: string | null;
+          text_purged_at?: string | null;
+          wa_timestamp: string;
+        };
+        Update: {
+          agent_config_id?: string;
+          channel_id?: string;
+          chat_jid?: string;
+          created_at?: string;
+          external_id?: string;
+          id?: string;
+          received_at?: string;
+          sender_jid?: string;
+          sender_name?: string | null;
+          sender_phone?: string | null;
+          tenant_id?: string;
+          text?: string | null;
+          text_purged_at?: string | null;
+          wa_timestamp?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "captured_messages_agent_config_fk";
+            columns: ["agent_config_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_configs";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "captured_messages_channel_fk";
+            columns: ["channel_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "channels";
+            referencedColumns: ["id", "tenant_id"];
           },
         ];
       };
@@ -240,6 +371,384 @@ export type Database = {
           },
         ];
       };
+      inbound_dedupe: {
+        Row: {
+          channel_id: string;
+          external_id: string;
+          received_at: string;
+          tenant_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          channel_id: string;
+          external_id: string;
+          received_at?: string;
+          tenant_id: string;
+        };
+        Update: {
+          channel_id?: string;
+          external_id?: string;
+          received_at?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbound_dedupe_channel_fk";
+            columns: ["channel_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "channels";
+            referencedColumns: ["id", "tenant_id"];
+          },
+        ];
+      };
+      mod_turnos_availability: {
+        Row: {
+          agent_config_id: string;
+          available: boolean;
+          date: string;
+          note: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          agent_config_id: string;
+          available: boolean;
+          date: string;
+          note?: string | null;
+          tenant_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          agent_config_id?: string;
+          available?: boolean;
+          date?: string;
+          note?: string | null;
+          tenant_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mod_turnos_availability_agent_config_fk";
+            columns: ["agent_config_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_configs";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "mod_turnos_availability_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      mod_turnos_branches: {
+        Row: {
+          active: boolean;
+          address: string;
+          city: string;
+          code: string;
+          colonia: string;
+          cp: string | null;
+          created_at: string;
+          keywords: string[];
+          number: number;
+          official_name: string;
+          series: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          address: string;
+          city: string;
+          code: string;
+          colonia: string;
+          cp?: string | null;
+          created_at?: string;
+          keywords?: string[];
+          number: number;
+          official_name: string;
+          series: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          address?: string;
+          city?: string;
+          code?: string;
+          colonia?: string;
+          cp?: string | null;
+          created_at?: string;
+          keywords?: string[];
+          number?: number;
+          official_name?: string;
+          series?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      mod_turnos_claims: {
+        Row: {
+          agent_config_id: string;
+          agent_event_id: string | null;
+          branch_code: string | null;
+          branch_number: number;
+          created_at: string;
+          date: string;
+          id: string;
+          origin: string;
+          publisher_jid: string;
+          shift: string;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agent_config_id: string;
+          agent_event_id?: string | null;
+          branch_code?: string | null;
+          branch_number: number;
+          created_at?: string;
+          date: string;
+          id?: string;
+          origin: string;
+          publisher_jid: string;
+          shift: string;
+          status?: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agent_config_id?: string;
+          agent_event_id?: string | null;
+          branch_code?: string | null;
+          branch_number?: number;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          origin?: string;
+          publisher_jid?: string;
+          shift?: string;
+          status?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mod_turnos_claims_agent_config_fk";
+            columns: ["agent_config_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_configs";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "mod_turnos_claims_agent_event_fk";
+            columns: ["agent_event_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_events";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "mod_turnos_claims_branch_code_fkey";
+            columns: ["branch_code"];
+            isOneToOne: false;
+            referencedRelation: "mod_turnos_branches";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          acted_at: string | null;
+          action_expires_at: string | null;
+          action_token_hash: string | null;
+          body: string;
+          channels_tried: string[];
+          created_at: string;
+          id: string;
+          kind: string;
+          payload: NonNullable<Json>;
+          priority: string;
+          read_at: string | null;
+          sent_at: string | null;
+          status: string;
+          tenant_id: string;
+          title: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          acted_at?: string | null;
+          action_expires_at?: string | null;
+          action_token_hash?: string | null;
+          body: string;
+          channels_tried?: string[];
+          created_at?: string;
+          id?: string;
+          kind: string;
+          payload?: NonNullable<Json>;
+          priority: string;
+          read_at?: string | null;
+          sent_at?: string | null;
+          status?: string;
+          tenant_id: string;
+          title: string;
+          user_id?: string | null;
+        };
+        Update: {
+          acted_at?: string | null;
+          action_expires_at?: string | null;
+          action_token_hash?: string | null;
+          body?: string;
+          channels_tried?: string[];
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          payload?: NonNullable<Json>;
+          priority?: string;
+          read_at?: string | null;
+          sent_at?: string | null;
+          status?: string;
+          tenant_id?: string;
+          title?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_fk";
+            columns: ["user_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id", "tenant_id"];
+          },
+        ];
+      };
+      outbound_messages: {
+        Row: {
+          agent_event_id: string | null;
+          body: string;
+          channel_id: string;
+          created_at: string;
+          error: string | null;
+          id: string;
+          idempotency_key: string;
+          origin: string;
+          provider_message_id: string | null;
+          sent_at: string | null;
+          status: string;
+          template_id: string;
+          tenant_id: string;
+          to_jid: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agent_event_id?: string | null;
+          body: string;
+          channel_id: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          idempotency_key: string;
+          origin: string;
+          provider_message_id?: string | null;
+          sent_at?: string | null;
+          status?: string;
+          template_id: string;
+          tenant_id: string;
+          to_jid: string;
+        };
+        Update: {
+          agent_event_id?: string | null;
+          body?: string;
+          channel_id?: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          origin?: string;
+          provider_message_id?: string | null;
+          sent_at?: string | null;
+          status?: string;
+          template_id?: string;
+          tenant_id?: string;
+          to_jid?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outbound_messages_agent_event_fk";
+            columns: ["agent_event_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "agent_events";
+            referencedColumns: ["id", "tenant_id"];
+          },
+          {
+            foreignKeyName: "outbound_messages_channel_fk";
+            columns: ["channel_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "channels";
+            referencedColumns: ["id", "tenant_id"];
+          },
+        ];
+      };
+      push_subscriptions: {
+        Row: {
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          last_success_at: string | null;
+          p256dh: string;
+          tenant_id: string;
+          user_agent: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          last_success_at?: string | null;
+          p256dh: string;
+          tenant_id: string;
+          user_agent?: string | null;
+          user_id: string;
+        };
+        Update: {
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          last_success_at?: string | null;
+          p256dh?: string;
+          tenant_id?: string;
+          user_agent?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_fk";
+            columns: ["user_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id", "tenant_id"];
+          },
+        ];
+      };
       tenants: {
         Row: {
           config: NonNullable<Json>;
@@ -310,6 +819,42 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tenants";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      wa_lid_map: {
+        Row: {
+          channel_id: string;
+          lid: string;
+          phone: string | null;
+          source: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          channel_id: string;
+          lid: string;
+          phone?: string | null;
+          source: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          channel_id?: string;
+          lid?: string;
+          phone?: string | null;
+          source?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wa_lid_map_channel_fk";
+            columns: ["channel_id", "tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "channels";
+            referencedColumns: ["id", "tenant_id"];
           },
         ];
       };

@@ -1,1 +1,17 @@
-["agent_config_history", "agent_configs", "audit_log", "channel_status_events", "channels", "users"]
+[
+  "agent_config_history",
+  "agent_configs",
+  "agent_events",
+  "audit_log",
+  "captured_messages",
+  "channel_status_events",
+  "channels",
+  "inbound_dedupe",
+  "mod_turnos_availability",
+  "mod_turnos_claims",
+  "notifications",
+  "outbound_messages",
+  "push_subscriptions",
+  "users",
+  "wa_lid_map"
+]

@@ -442,6 +442,12 @@ Es global porque es información de catálogo y la reutilizará cualquier otro m
 | created_at, updated_at | timestamptz | |
 | Índices | | UNIQUE parcial `(agent_config_id, date) WHERE status IN ('dm_sent','confirmed')`: **garantiza un turno por día en la base de datos**; UNIQUE `(agent_config_id, publisher_jid, date, shift)`: deduplicación por turno |
 
+**Ajustes de T1.9** (migraciones `202611240000_engine.sql`, `202611240100_mod_turnos.sql` y `202611240200_mod_turnos_branches_data.sql`):
+- El catálogo de sucursales se carga con una **migración de datos**, no con `supabase/seed/`, porque la semilla solo corre en local y el catálogo se necesita en producción. La migración se genera desde el CSV con `npm run gen:branches -w @ravyn/module-apartador-turnos` (palabras clave en `modules/apartador-turnos/src/catalog/branches.ts`), y una prueba falla si se desincroniza.
+- Columnas agregadas: `outbound_messages.idempotency_key` (UNIQUE por canal; la clave `{agentEventId}:{to}` de 6.3), `agent_events.feedback_at`, `mod_turnos_branches.cp` y `updated_at`, y `captured_messages.created_at`.
+- `users` gana UNIQUE `(id, tenant_id)` para que `notifications` y `push_subscriptions` usen FK compuestas: un usuario solo recibe avisos de su tenant y el personal de Ravyn no puede tener suscripciones de un tenant.
+- `outbound_messages.status = 'sent'` exige `sent_at` y `provider_message_id`; `notifications` exige que el token de acción tenga expiración.
+
 ### 3.3 Diagrama ER
 
 ```mermaid

@@ -22,7 +22,7 @@ packages/
   core/       tipos de dominio, contexto de tenant, registro de módulos
   channels/   interfaz ChannelAdapter, normalización de teléfonos, registro, Fake y dry-run
   db/         cliente admin de Supabase, tipos generados, tenantTable(), check-rls
-modules/      módulos de agente (fase 1: apartador-turnos)
+modules/      módulos de agente (fase 1: apartador-turnos, con el catálogo de sucursales y fixtures)
 supabase/     config.toml, migraciones y semillas
 infra/        docker-compose, ejemplos de env y scripts de despliegue
 docs/         plan, anexos y runbooks
@@ -48,6 +48,7 @@ npm run db:start    # levanta Supabase local en Docker (API 54321, Postgres 5432
 npm run db:reset    # aplica supabase/migrations y supabase/seed/*.sql desde cero
 npm run db:types    # regenera packages/db/src/types.gen.ts
 npm run check-rls   # falla si alguna tabla de public no tiene RLS
+npm run gen:branches -w @ravyn/module-apartador-turnos  # regenera la migración del catálogo de sucursales
 ```
 
 - Migraciones en `supabase/migrations/YYYYMMDDHHMM_nombre.sql`. Cada tabla nueva lleva
