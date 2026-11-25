@@ -12,6 +12,9 @@
  * - latencia p50, p95 y máxima, y cuántas llamadas pasarían el tope de producción (2 s);
  * - tokens y costo.
  * El reporte se guarda en docs/evals/. Los casos son sintéticos o ya públicos en el plan.
+ *
+ * En una sesión en la nube con la key inyectada por el proxy, el fetch de Node necesita
+ * NODE_USE_ENV_PROXY=1 (ver docs/evals/README.md).
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

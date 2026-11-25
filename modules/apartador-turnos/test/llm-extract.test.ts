@@ -95,6 +95,19 @@ describe("analyze: combinación regex más LLM (7.6)", () => {
   });
 });
 
+describe("analyze: expresiones de fecha que el regex no reconoce", () => {
+  it("aunque el LLM esté seguro, van a NOTIFICAR (el doctor decide)", async () => {
+    const r = await analyze(
+      "Necesito cobertura la próxima semana el martes matutino reynosa 3 cumbres",
+      NOW,
+      ctx(recorded("turno-desde-llm")),
+    );
+    expect(r.llmCalled).toBe(true);
+    expect(r.extraction.confidence).toBe(0.7);
+    expect(r.decision).toMatchObject({ kind: "NOTIFICAR", reasons: ["baja_confianza"] });
+  });
+});
+
 describe("analyze: fallas del LLM terminan en NOTIFICAR con su motivo", () => {
   it.each([
     ["refusal", "refusal"],

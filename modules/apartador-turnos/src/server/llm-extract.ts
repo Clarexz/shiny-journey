@@ -33,6 +33,13 @@ export function shouldCallLlm(ex: TurnoExtraction): boolean {
 
 const CONTRADICTION_CAP = 0.5;
 const OUT_OF_RANGE_CAP = 0.5;
+/**
+ * Expresiones de fecha que el regex no reconoce ("la próxima semana", "la otra semana"): las
+ * personas las interpretan distinto y el LLM también (en la evaluación del 2026-11-25, "la
+ * próxima semana el martes" dicho un jueves dio una vez el martes de dentro de 19 días). Con
+ * este tope quedan por debajo de `minConfidence` y van a NOTIFICAR: el doctor decide.
+ */
+const UNRECOGNIZED_DATE_CAP = 0.7;
 
 function addDaysIso(date: string, n: number): string {
   const d = new Date(`${date}T00:00:00Z`);
@@ -87,6 +94,8 @@ export async function extractWithLlm(
   if (regexSure && llmDates.length > 0 && llmDates.join() !== det.dates.join()) contradicts = true;
 
   if (contradicts) confidence = Math.min(confidence, CONTRADICTION_CAP);
+  if (det.dateIssues.includes("expresion_no_reconocida"))
+    confidence = Math.min(confidence, UNRECOGNIZED_DATE_CAP);
   if (!regexSure) {
     const limit = addDaysIso(ctx.today, ctx.maxDaysAhead);
     if (llmDates.some((d) => d < ctx.today || d > limit))

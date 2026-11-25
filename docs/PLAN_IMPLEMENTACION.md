@@ -1129,6 +1129,14 @@ const res = await client.messages.parse(
 - Si el LLM no está configurado, se decide solo con el regex.
 - La prueba de cordura del set de evaluación encontró un bug del parser de fechas: "el jueves 19" dicho el jueves 12 daba hoy. Ya está corregido.
 
+**Resultado de `eval:extractor`** (2026-11-25, `docs/evals/README.md`):
+- **Corridas:** dos, de 42 casos cada una.
+- **Exactitud:** 83 de 84 llamadas con los tres campos correctos.
+- **Latencia:** p95 de 1.6 s en una corrida y de 2.5 s en la otra; entre 0 y 5 llamadas por encima de los 2 s.
+- **Costo:** menos de US$0.04 al mes con 300 llamadas.
+- **Ajuste por el único error** ("la próxima semana el martes"): cuando el regex marca una expresión de fecha que no reconoce, la confianza combinada queda en 0.7 como máximo y el caso va a NOTIFICAR.
+- **Tope de 2000 ms:** se mantiene y se mide en el modo observación.
+
 **Prompt de sistema** (versión 1, en `modules/apartador-turnos/src/server/prompt.ts`):
 
 ```
