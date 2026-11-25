@@ -21,7 +21,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --schema public > packages/db/src/types.gen.ts && prettier --write packages/db/src/types.gen.ts",
-    "check-rls": "npm run check-rls -w @ravyn/db"
+    "check-rls": "npm run check-rls -w @ravyn/db",
+    "eval:extractor": "npm run eval:extractor -w @ravyn/module-apartador-turnos --"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

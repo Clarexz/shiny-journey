@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reason": "refusal",
+  "usage": {
+    "used": true,
+    "model": "gpt-6-luna",
+    "stopReason": "refusal"
+  }
+}

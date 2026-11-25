@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "data": {
+    "sucursal": {
+      "numero": 3,
+      "pista": "cumbres"
+    },
+    "fechas": ["2026-11-12"],
+    "turno": "matutino",
+    "confianza": 0.92,
+    "nota": null
+  },
+  "usage": {
+    "used": true,
+    "model": "gpt-6-luna",
+    "inputTokens": 1034,
+    "cachedInputTokens": 0,
+    "outputTokens": 58,
+    "reasoningTokens": 0,
+    "costUsd": 0.0001324,
+    "stopReason": "stop",
+    "ms": 760
+  }
+}

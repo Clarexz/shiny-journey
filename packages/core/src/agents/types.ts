@@ -103,20 +103,42 @@ export interface LlmUsage {
   inputTokens?: number;
   outputTokens?: number;
   costUsd?: number;
+  /** Incluidos en `outputTokens`. */
+  reasoningTokens?: number;
+  cachedInputTokens?: number;
   stopReason?: string | null;
   ms?: number;
 }
 
-/** Extracción estructurada con LLM (se implementa en T1.13, `packages/llm`). */
+/** Motivos estables de una extracción fallida (van a `agent_events.llm.stop_reason`). */
+export const LLM_FAILURE_REASONS = [
+  "timeout",
+  "network",
+  "unauthorized",
+  "rate_limited",
+  "provider_error",
+  "refusal",
+  "max_tokens",
+  "content_filter",
+  "invalid_json",
+  "schema_mismatch",
+  "budget_exhausted",
+] as const;
+export type LlmFailureReason = (typeof LLM_FAILURE_REASONS)[number];
+
+export type LlmResult<T> =
+  { ok: true; data: T; usage: LlmUsage } | { ok: false; reason: LlmFailureReason; usage: LlmUsage };
+
+/** Extracción estructurada con LLM (implementación en `packages/llm`). Nunca lanza. */
 export interface LlmClient {
   extractJson<T>(input: {
     schema: ZodType<T>;
+    /** Nombre del esquema para el proveedor (`[a-zA-Z0-9_-]`). */
+    name?: string;
     system: string;
     user: string;
     timeoutMs?: number;
-  }): Promise<
-    { ok: true; data: T; usage: LlmUsage } | { ok: false; reason: string; usage: LlmUsage }
-  >;
+  }): Promise<LlmResult<T>>;
 }
 
 export interface NotificationRequest {

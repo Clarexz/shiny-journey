@@ -31,8 +31,13 @@ export const WorkerEnvSchema = z.object({
   EVOLUTION_API_KEY: optionalString,
   WEBHOOK_BASE_URL: z.url().optional(),
   WORKER_INTERNAL_TOKEN: optionalString,
+  // LLM del extractor (7.6). Por ahora solo OpenAI; ANTHROPIC_API_KEY queda para un segundo
+  // adaptador. Sin key, el Apartador decide solo con el regex.
+  LLM_PROVIDER: z.enum(["openai"]).default("openai"),
+  OPENAI_API_KEY: optionalString,
   ANTHROPIC_API_KEY: optionalString,
-  LLM_MODEL: z.string().default("claude-haiku-5-5"),
+  LLM_MODEL: z.string().default("gpt-6-luna"),
+  LLM_REASONING_EFFORT: z.enum(["none", "low", "medium", "high", "xhigh", "max"]).default("none"),
   LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(2000),
   VAPID_PUBLIC_KEY: optionalString,
   VAPID_PRIVATE_KEY: optionalString,

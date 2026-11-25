@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "reason": "budget_exhausted",
+  "usage": {
+    "used": false,
+    "stopReason": "budget_exhausted"
+  }
+}

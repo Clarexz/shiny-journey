@@ -50,6 +50,8 @@ describe("parseDates: expresiones simples (jueves 2026-11-12)", () => {
     ["hoy 12 de noviembre", ["2026-11-12"]],
     ["hoy 12", ["2026-11-12"]],
     ["viernes 13", ["2026-11-13"]],
+    ["el jueves 19", ["2026-11-19"]],
+    ["jueves 12", ["2026-11-12"]],
     ["sábado, 14 de noviembre", ["2026-11-14"]],
   ])("%s -> %j", (text, dates) => {
     expect(parse(`busco cobertura ${text} reynosa 3`)).toMatchObject({

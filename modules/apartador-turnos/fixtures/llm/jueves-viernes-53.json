@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "data": {
+    "sucursal": {
+      "numero": 53,
+      "pista": null
+    },
+    "fechas": ["2026-11-12", "2026-11-13"],
+    "turno": "matutino",
+    "confianza": 0.95,
+    "nota": null
+  },
+  "usage": {
+    "used": true,
+    "model": "gpt-6-luna",
+    "inputTokens": 1034,
+    "cachedInputTokens": 0,
+    "outputTokens": 58,
+    "reasoningTokens": 0,
+    "costUsd": 0.0001324,
+    "stopReason": "stop",
+    "ms": 820
+  }
+}

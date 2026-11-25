@@ -241,7 +241,8 @@ export function parseDates(normalized: string, now: Date, timeZone = DEFAULT_TIM
       consistent = Number(day) === anchor.d;
     }
     if (!consistent) issues.add("incoherente");
-    found.push(consistent || !numbered ? anchor : numbered);
+    // Con número, la fecha la da el número ("el jueves 19" dicho el jueves 12 es el 19, no hoy).
+    found.push(numbered ?? anchor);
   }
 
   for (const match of text.matchAll(RE_DAY_LIST)) {

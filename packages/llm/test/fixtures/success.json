@@ -1,0 +1,28 @@
+{
+  "id": "chatcmpl-FAKE",
+  "object": "chat.completion",
+  "created": 1795600000,
+  "model": "gpt-6-luna",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"sucursal\": {\"numero\": 53, \"pista\": null}, \"fechas\": [\"2026-11-12\", \"2026-11-13\"], \"turno\": \"matutino\", \"confianza\": 0.95, \"nota\": null}",
+        "refusal": null
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1012,
+    "completion_tokens": 64,
+    "total_tokens": 1076,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

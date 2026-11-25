@@ -2,6 +2,7 @@
  * Extracción determinista (regex y parser de fechas), el camino rápido de 6.2. T1.13 la
  * combina con el LLM cuando `needsLlm` es verdadero.
  */
+import type { LlmFailureReason, LlmUsage } from "@ravyn/core";
 import type { AcceptedBranch, BranchCatalog, BranchMatch } from "./branch";
 import { resolveBranch } from "./branch";
 import { parseDates, type DateIssue } from "./dates";
@@ -23,6 +24,12 @@ export interface TurnoExtraction {
   failed: boolean;
   needsLlm: boolean;
   dateIssues: DateIssue[];
+  /** Uso del LLM, si se llamó (va a `agent_events.llm`). */
+  llm?: LlmUsage;
+  /** Motivo de la falla del LLM (`timeout`, `refusal`, `budget_exhausted`...). */
+  llmFailure?: LlmFailureReason;
+  /** Nota del LLM cuando baja la confianza (sin texto del mensaje). */
+  llmNote?: string | null;
 }
 
 export interface ExtractContext {

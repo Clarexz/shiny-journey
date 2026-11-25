@@ -1111,6 +1111,24 @@ const res = await client.messages.parse(
 - Se valida además que las fechas no estén en el pasado ni a más de `maxDaysAhead` días; si no, se baja la confianza.
 - **Combinación**: los campos que el regex resolvió con confianza 1.0 prevalecen sobre el LLM (sucursal y turno). El LLM solo completa lo que faltaba. Si contradice al regex en un campo resuelto, la confianza final es `min(conf_llm, 0.5)`.
 
+**Cambio de T1.13: proveedor y modelo** (2026-11-25). El extractor arranca con **GPT-6 Luna** de OpenAI en lugar de Haiku 5.5:
+- **Precio:** el mismo (US$0.10 de entrada y US$0.50 de salida por millón de tokens).
+- **Latencia publicada (Artificial Analysis):** Luna tarda unos 1.3 s hasta el primer token sin razonamiento. Haiku 5.5 tarda unos 6.4 s con esfuerzo bajo, medido con prompts de 10 000 tokens. La estimación de 6.5 (700 ms de p50 y 1.5 s de p95) nunca se midió; `eval:extractor` da el dato real.
+- **Créditos:** el cliente tiene créditos de OpenAI y no de Anthropic.
+
+**Implementación:**
+- `packages/llm` llama a Chat Completions con `fetch` (sin SDK).
+- Usa Structured Outputs con esquema estricto (`toStrictJsonSchema` convierte el esquema Zod), y la respuesta se vuelve a validar con Zod.
+- Manda `reasoning_effort: "none"` explícito, porque el valor por defecto de gpt-6-luna es `medium`.
+- Manda `store: false`, timeout duro y no reintenta.
+- Toda falla vuelve como un motivo estable (`timeout`, `refusal`, `max_tokens`, `budget_exhausted`, etc.) y la regla 4 la manda a NOTIFICAR.
+- El presupuesto mensual es un envoltorio aparte (`withBudget`) sobre Redis.
+- El prompt no nombra proveedor ni modelo.
+
+**Combinación con el regex** (`analyze()`):
+- Si el LLM no está configurado, se decide solo con el regex.
+- La prueba de cordura del set de evaluación encontró un bug del parser de fechas: "el jueves 19" dicho el jueves 12 daba hoy. Ya está corregido.
+
 **Prompt de sistema** (versión 1, en `modules/apartador-turnos/src/server/prompt.ts`):
 
 ```
@@ -1457,8 +1475,10 @@ EVOLUTION_BASE_URL=http://evolution:8080
 EVOLUTION_API_KEY=
 WEBHOOK_BASE_URL=http://worker:3001
 WORKER_INTERNAL_TOKEN=
-ANTHROPIC_API_KEY=
-LLM_MODEL=claude-haiku-5-5
+LLM_PROVIDER=openai
+OPENAI_API_KEY=
+LLM_MODEL=gpt-6-luna
+LLM_REASONING_EFFORT=none
 LLM_TIMEOUT_MS=2000
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
@@ -1970,7 +1990,7 @@ flowchart LR
 | D-04 | Helper `tenantTable()` más una regla de lint sobre el filtro explícito | Mismo principio 7, aplicado de forma consistente | Bajo |
 | D-05 | Monorepo con npm workspaces y Vitest | Coincide con `ravyn-crm` (npm); hacen falta pruebas | Bajo |
 | D-06 | Parser de fechas determinista antes del LLM | Latencia y costo; el LLM solo para lo ambiguo (principio 6) | Bajo |
-| D-07 | `effort: "low"` en Haiku y sin caché de prompt | El tráfico esporádico no aprovecharía la caché; se mide y se ajusta en T1.13 | Bajo |
+| D-07 | Extractor con **GPT-6 Luna** (OpenAI) y `reasoning_effort: "none"`, sin caché de prompt. Antes: Haiku 5.5 con `effort: "low"`. Cambio del 2026-11-25 (ver la nota de T1.13 en 7.6) | Mismo precio que Haiku 5.5 (US$0.10 / US$0.50 por millón); latencia publicada menor sin razonamiento; el cliente solo tiene créditos de OpenAI. Se confirma con `eval:extractor` | Bajo: `extractJson` es neutral y el proveedor se elige por variable de entorno; Anthropic es un adaptador más |
 | D-08 | Un solo dominio `app.ravyn-crm.cloud` con marca según el usuario, en lugar de subdominio por tenant | Más simple (un certificado y sin ruteo dinámico); los subdominios por tenant se pueden agregar después con un middleware | Bajo |
 | D-09 | Kong de Supabase no expuesto; Auth a través de un proxy en el dominio del panel | Reduce la superficie expuesta | Bajo |
 | D-10 | Descartados sin push por defecto (`notifyDiscarded = false`) | Evita el ruido (R10) | Bajo, es una opción del panel |

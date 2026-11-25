@@ -1,0 +1,426 @@
+{
+  "version": 1,
+  "description": "Set de evaluación del extractor (T1.13): los 5 mensajes reales y variaciones escritas a mano. Fechas en America/Matamoros.",
+  "cases": [
+    {
+      "id": "juarez-13",
+      "text": "Buenas tardes solicito.cobertura el día de hoy para reynosa 13,en turno vespertino en la.juarez 2",
+      "at": "2026-11-12T13:05:00-06:00",
+      "expected": {
+        "numero": 13,
+        "fechas": ["2026-11-12"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "piramides-52",
+      "text": "Buenas tardes busco cobertura domingo 15 noviembre, Reynosa 52 pirámides ambos turnos",
+      "at": "2026-11-11T18:30:00-06:00",
+      "expected": {
+        "numero": 52,
+        "fechas": ["2026-11-15"],
+        "turno": "ambos"
+      }
+    },
+    {
+      "id": "jueves-viernes-53",
+      "text": "Busco cobertura para este jueves y viernes turno matutino reynosa 53 por motivos de salud",
+      "at": "2026-11-10T15:12:00-06:00",
+      "expected": {
+        "numero": 53,
+        "fechas": ["2026-11-12", "2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "hoy-51",
+      "text": "Busco cobertura para hoy turno matutino en Reynosa 51",
+      "at": "2026-11-13T06:50:00-06:00",
+      "expected": {
+        "numero": 51,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "cumbres-3",
+      "text": "Buenos días busco cobertura para hoy 9 noviembre matutino en cumbres Reynosa 3",
+      "at": "2026-11-09T07:40:00-06:00",
+      "expected": {
+        "numero": 3,
+        "fechas": ["2026-11-09"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "manana-turno",
+      "text": "Busco cobertura mañana turno matutino reynosa 3 cumbres",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 3,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "cubra-tarde",
+      "text": "alguien que me cubra hoy en la tarde reynosa 10 centro",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 10,
+        "fechas": ["2026-11-12"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "sabado-14",
+      "text": "Solicito cobertura para el sábado 14 de noviembre turno matutino Reynosa 15 vista hermosa",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 15,
+        "fechas": ["2026-11-14"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "urgente-emoji",
+      "text": "Cobertura urgente hoy!! reynosa 22 jarachina sur turno de la mañana 🙏",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 22,
+        "fechas": ["2026-11-12"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "viernes-manana",
+      "text": "Buenas, necesito quien me cubra el viernes por la mañana en la Reynosa 30 caracoles",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 30,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "pasado-manana",
+      "text": "busco cobertura pasado mañana vespertino reynosa 4 blvd hidalgo",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 4,
+        "fechas": ["2026-11-14"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "domingo-lunes",
+      "text": "Cobertura domingo 15 y lunes 16 matutino reynosa 21",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 21,
+        "fechas": ["2026-11-15", "2026-11-16"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "todo-el-dia",
+      "text": "Necesito cobertura el 20 de noviembre todo el día reynosa 17 puerta del sol",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 17,
+        "fechas": ["2026-11-20"],
+        "turno": "ambos"
+      }
+    },
+    {
+      "id": "cubrir-pregunta",
+      "text": "Hola, alguien para cubrir mañana? Reynosa 2, turno vespertino",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 2,
+        "fechas": ["2026-11-13"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "proximo-lunes",
+      "text": "Busco cobertura para el próximo lunes matutino reynosa 1",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 1,
+        "fechas": ["2026-11-16"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "sin-turno",
+      "text": "Cobertura hoy reynosa 50 vista alta",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 50,
+        "fechas": ["2026-11-12"],
+        "turno": null
+      }
+    },
+    {
+      "id": "rango",
+      "text": "Se solicita cobertura del 18 al 20 de noviembre matutino reynosa 31 petrolera",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 31,
+        "fechas": ["2026-11-18", "2026-11-19", "2026-11-20"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "pegado",
+      "text": "solicito.cobertura.reynosa40 mañana en la mañana",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 40,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "este-martes",
+      "text": "Doctores busco cobertura este martes matutino reynosa 11 olmo",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 11,
+        "fechas": ["2026-11-17"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "dia-de-manana",
+      "text": "Buen día, cobertura para el día de mañana en reynosa 30 hacienda del sol, turno matutino",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 30,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "finde-ambos",
+      "text": "Cobertura sábado y domingo ambos turnos reynosa 52",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 52,
+        "fechas": ["2026-11-14", "2026-11-15"],
+        "turno": "ambos"
+      }
+    },
+    {
+      "id": "miercoles-18",
+      "text": "Busco cobertura miércoles 18 vespertino Reynosa 12",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 12,
+        "fechas": ["2026-11-18"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "por-la-tarde",
+      "text": "necesito cobertura hoy por la tarde reynosa 3 benito juarez",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 3,
+        "fechas": ["2026-11-12"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "25-nov",
+      "text": "Cobertura 25 de noviembre matutino reynosa 23",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 23,
+        "fechas": ["2026-11-25"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "orden-raro",
+      "text": "cobertura reynosa 5 hoy matutino porfavor",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 5,
+        "fechas": ["2026-11-12"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "2-enero",
+      "text": "Busco cobertura el 2 de enero matutino reynosa 3 cumbres",
+      "at": "2026-12-30T10:00:00-06:00",
+      "expected": {
+        "numero": 3,
+        "fechas": ["2027-01-02"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "manana-1-enero",
+      "text": "cobertura mañana 1 de enero vespertino reynosa 10",
+      "at": "2026-12-31T10:00:00-06:00",
+      "expected": {
+        "numero": 10,
+        "fechas": ["2027-01-01"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "hoy-12-nov",
+      "text": "Busco cobertura para hoy 12 de noviembre en turno matutino reynosa 44",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 44,
+        "fechas": ["2026-11-12"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "fin-de-semana",
+      "text": "busco cobertura este fin de semana matutino reynosa 15",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 15,
+        "fechas": ["2026-11-14", "2026-11-15"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "lunes-en-la-manana",
+      "text": "Cobertura el lunes en la mañana Reynosa 7",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 7,
+        "fechas": ["2026-11-16"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "jueves-19",
+      "text": "Alguien me puede cubrir el jueves 19 turno vespertino reynosa 35?",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 35,
+        "fechas": ["2026-11-19"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "dos-sucursales",
+      "text": "busco cobertura hoy matutino reynosa 3 o reynosa 4",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 3,
+        "fechas": ["2026-11-12"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "manana-viernes",
+      "text": "Buenas noches, cobertura para mañana viernes reynosa 26 matutino",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 26,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "proxima-semana-martes",
+      "text": "Necesito cobertura la próxima semana el martes vespertino reynosa 20",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 20,
+        "fechas": ["2026-11-17"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "viernes-sabado-tarde",
+      "text": "Cobertura viernes 13 y sábado 14 reynosa 9 turno de la tarde",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 9,
+        "fechas": ["2026-11-13", "2026-11-14"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "noche",
+      "text": "busco cobertura hoy en la noche reynosa 18",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 18,
+        "fechas": ["2026-11-12"],
+        "turno": null
+      }
+    },
+    {
+      "id": "gracias-y-busco",
+      "text": "Gracias doctora! Y busco cobertura mañana matutino reynosa 45",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 45,
+        "fechas": ["2026-11-13"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "turno-del-domingo",
+      "text": "Busco quién me cubra el turno matutino del domingo, Reynosa 36",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 36,
+        "fechas": ["2026-11-15"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "turno-completo",
+      "text": "Busco cobertura para hoy turno completo Reynosa 51",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 51,
+        "fechas": ["2026-11-12"],
+        "turno": "ambos"
+      }
+    },
+    {
+      "id": "dia-16",
+      "text": "cobertura dia 16 matutino reynosa 13 pedro j mendez",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 13,
+        "fechas": ["2026-11-16"],
+        "turno": "matutino"
+      }
+    },
+    {
+      "id": "3-diciembre",
+      "text": "Solicito cobertura para el 3 de diciembre vespertino reynosa 30",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 30,
+        "fechas": ["2026-12-03"],
+        "turno": "vespertino"
+      }
+    },
+    {
+      "id": "emojis-cumbres",
+      "text": "Buen día! cobertura hoy matutino Reynosa 38 las cumbres 🙏🙏",
+      "at": "2026-11-12T08:00:00-06:00",
+      "expected": {
+        "numero": 38,
+        "fechas": ["2026-11-12"],
+        "turno": "matutino"
+      }
+    }
+  ]
+}

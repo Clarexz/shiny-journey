@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reason": "max_tokens",
+  "usage": {
+    "used": true,
+    "model": "gpt-6-luna",
+    "stopReason": "max_tokens"
+  }
+}
