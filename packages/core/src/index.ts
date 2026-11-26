@@ -20,3 +20,13 @@ export {
   type ConfigValidation,
 } from "./modules/registry";
 export { CONFIG_CHANGED_CHANNEL, type ConfigChangedMessage } from "./events";
+export { adaptiveDelay, type DelayOptions } from "./agents/delay";
+export {
+  createMemoryRateLimiter,
+  createRedisRateLimiter,
+  rateLimitKeys,
+  type RateLimitInput,
+  type RedisEval,
+  type SendLimits,
+  type SendRateLimiter,
+} from "./rate-limit";

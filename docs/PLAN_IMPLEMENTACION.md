@@ -906,6 +906,12 @@ Limitador en Redis con ventana deslizante (sorted set) por canal:
 - `minGapSameContactMin` (por defecto 30): no escribirle dos veces seguidas a la misma persona.
 - Si se excede algún límite, la decisión pasa de APARTAR a NOTIFICAR con el motivo `limite_envios`. El doctor puede tomarlo a mano.
 
+**Implementación de T1.14** (`packages/core/src/rate-limit.ts`):
+- La verificación y el consumo son un solo script Lua, atómico: con 20 envíos en paralelo y cupo de 6, pasan exactamente 6.
+- La separación por contacto guarda la hora del último envío y compara contra el reloj que se pasa (el TTL solo limpia).
+- `check()` consulta sin consumir (regla 16) y `tryConsume()` consume al enviar.
+- `createMemoryRateLimiter()` tiene la misma lógica, para pruebas y para el harness.
+
 ### 6.5 Presupuesto de latencia
 
 Se mide desde que llega el webhook (`receivedAt`) hasta el ACK de `sendText`. Lo que pasa entre la publicación en WhatsApp y la llegada del webhook (normalmente de 0.3 a 1 s) no depende de nosotros, pero se registra como `wa_to_send_ms` usando `messageTimestamp`.
@@ -1274,6 +1280,11 @@ Pool `interestAmbiguous` (`{colonia}` = colonia de la sucursal aceptada):
 1. `{saludo}, me interesa la cobertura. ¿Es la de {colonia}?`
 2. `Hola, {saludo_min}. Me interesa, ¿es la sucursal de {colonia}?`
 3. `{saludo}{, nombre}. Yo la puedo cubrir, ¿es la de {colonia}?`
+
+**Implementación de T1.14** (`modules/apartador-turnos/src/server/templates.ts`):
+- De 0:00 a 4:59 también se saluda con "Buenas noches" o "Buenas", no con "Buenos días".
+- Con un pool de 3 plantillas (`interestAmbiguous`) se excluyen las últimas 2, para que siempre quede alguna. En el pool `interest`, con 8, se excluyen las últimas 3.
+- Las recientes se guardan en Redis (`tpl:recent:{canal}:{pool}`, lista de 3 con caducidad de 30 días).
 
 ### 7.9 Avisos al doctor
 
