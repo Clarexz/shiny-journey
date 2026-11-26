@@ -30,13 +30,14 @@ docs/         plan, anexos y runbooks
 
 ## Comandos
 
-| Comando             | Qué hace                                         |
-| ------------------- | ------------------------------------------------ |
-| `npm ci`            | Instala las dependencias de todos los workspaces |
-| `npm run lint`      | ESLint sobre todo el repo (cero advertencias)    |
-| `npm run typecheck` | `tsc --noEmit` en cada workspace                 |
-| `npm test`          | Vitest en todos los proyectos                    |
-| `npm run format`    | Prettier                                         |
+| Comando                                  | Qué hace                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `npm ci`                                 | Instala las dependencias de todos los workspaces                                                            |
+| `npm run lint`                           | ESLint sobre todo el repo (cero advertencias)                                                               |
+| `npm run typecheck`                      | `tsc --noEmit` en cada workspace                                                                            |
+| `npm test`                               | Vitest en todos los proyectos                                                                               |
+| `npm run format`                         | Prettier                                                                                                    |
+| `npm run harness -- --scenario <nombre>` | Harness de webhooks (privacy, lid, real-messages, burst, disconnect); necesita `DATABASE_URL` y `REDIS_URL` |
 
 Los comandos de cada fase (Supabase, web, worker, despliegue) se documentan en su sección más abajo
 a medida que se agregan.

@@ -1692,6 +1692,15 @@ npm run harness -- --live-staging                # contra Evolution de staging (
 - El worker corre con `CHANNEL_DRY_RUN=true` (adaptador Fake para la salida) contra un Supabase local (`supabase start`) y Redis en Docker.
 - Al terminar, el harness consulta la base de datos y el registro del Fake y compara contra lo esperado. Sale con código 1 si algo no coincide (se usa en CI).
 
+**Implementación de T1.16** (`apps/worker/scripts/harness.ts`, `npm run harness -- --scenario <nombre>`):
+- Arma el worker en el mismo proceso con `composeWorker()`, el mismo cableado que `main.ts`, y usa `CHANNEL_DRY_RUN`, Redis y BullMQ reales.
+- Siembra por `DATABASE_URL` un tenant de prueba con su canal y su agente, y al terminar borra todo: los datos en cascada, las claves de Redis y las colas.
+- Carga la tabla de ruteo por Supabase si hay credenciales (CI); si no, con una consulta equivalente por Postgres.
+- Cada escenario incluye la verificación de que el grupo objetivo está suscrito, para que ninguno pase en vacío.
+- Sale con 1 si algo no coincide y con 2 si falta configuración o el escenario no existe.
+- Hasta T1.15 la cola no se procesa, así que los escenarios verifican recepción, ruteo, deduplicación y privacidad. `real-messages` y `burst` reciben las decisiones y los límites en T1.15, `disconnect` las filas y avisos en T1.18, y `latency` responde con código 2 hasta T1.15.
+- `modules/apartador-turnos/src/definition.ts` se adelantó para que el grupo objetivo quede suscrito; su `server()` llega en T1.15.
+
 ### 13.4 Prueba de punta a punta antes de producción
 
 Con dos teléfonos de Ravyn: el número A conectado al agente y el número B como publicador, ambos en un grupo de prueba. B publica los 5 mensajes reales (adaptando las fechas). Se verifica que el DM llegue, que la notificación push llegue a la PWA, que "Tomarlo" funcione y que la base de Evolution siga sin mensajes. Es el criterio de aceptación de T1.27.

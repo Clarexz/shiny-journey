@@ -54,6 +54,14 @@ jobs:
           REDIS_URL: redis://127.0.0.1:6379/0
         run: npm test
 
+      - name: Harness de webhooks (privacy, lid, real-messages)
+        env:
+          REDIS_URL: redis://127.0.0.1:6379/0
+        run: |
+          npm run harness -- --scenario privacy
+          npm run harness -- --scenario lid
+          npm run harness -- --scenario real-messages
+
       - name: Build de web y worker
         run: |
           npm run build -w @ravyn/web

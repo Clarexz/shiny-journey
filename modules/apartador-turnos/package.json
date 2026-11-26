@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./catalog": "./src/catalog/branches.ts"
+    "./catalog": "./src/catalog/branches.ts",
+    "./definition": "./src/definition.ts",
+    "./ui": "./src/ui/manifest.ts",
+    "./config": "./src/config.ts",
+    "./fixtures/*": "./fixtures/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
